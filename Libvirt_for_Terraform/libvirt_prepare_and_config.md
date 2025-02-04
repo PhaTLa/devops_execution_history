@@ -1,33 +1,31 @@
-1. Install genisoimage for provide `mkisofs`:
+1. Install `genisoimage` to provide `mkisofs`:
 
-```
-sudo apt-get install genisoimage
-```
+    ```sh
+    sudo apt-get install genisoimage
+    ```
 
-2. find and un-define libvirt domain <if exist>:
+2. Find and undefine the libvirt domain (if it exists):
 
-```
-virsh list --all
-```
-```
-virsh undefine demo_tf01 --remove-all-storage
-```
+    ```sh
+    virsh list --all
+    virsh undefine demo_tf01 --remove-all-storage
+    ```
 
-3. Destroy all older resource if previous run was fail
+3. Destroy all older resources if the previous run failed.
 
-4. Next thing to try was `/etc/apparmor.d/libvirt/TEMPLATE.qemu`. I added my pool path there AAAAND it works after. So this is what I have in TEMPLATE.qemu file now:
+4. Modify `/etc/apparmor.d/libvirt/TEMPLATE.qemu` to include your pool path. This is what the `TEMPLATE.qemu` file should look like:
 
-```
-#
-# This profile is for the domain whose UUID matches this file.
-#
+    ```sh
+    #
+    # This profile is for the domain whose UUID matches this file.
+    #
 
-#include <tunables/global>
+    #include <tunables/global>
 
-profile LIBVIRT_TEMPLATE flags=(attach_disconnected) {
-  #include <abstractions/libvirt-qemu>
-  # Allow access to custom storage pool
-  "/srv/libvirt/images/" r,
-  "/srv/libvirt/images/**" rwk,
-}
-```
+    profile LIBVIRT_TEMPLATE flags=(attach_disconnected) {
+      #include <abstractions/libvirt-qemu>
+      # Allow access to custom storage pool
+      "/srv/libvirt/images/" r,
+      "/srv/libvirt/images/**" rwk,
+    }
+    ```
