@@ -38,6 +38,13 @@
 192.168.122.81 hadoop-slaves
 ```
 
+# Manually check and correct hostname for all node in cluster:
+
+```sh
+sudo hostname -b <correct_hostname>
+```
+This will ensure hadoop can resolve hostname correctly.
+
 # Create User Directory in HDFS
 
 ```sh
