@@ -1,4 +1,8 @@
-# Terraform Variables
+# HADOOP CLUSTER INSTALLATION
+**Author:** Pham Tung Lam  
+**Date Released:** February 05, 2025
+
+## Terraform Variables
 
 - `var.libvirt_volume_name` = `hadoop-clt`
 - `var.number_of_vms` = `1`
@@ -7,15 +11,15 @@
 - `var.vm_name` = `hadoop`
 - `var.vm_vcpu` = `2`
 
-# Create DevOps Users and Copy SSH Public Key
+## Create DevOps Users and Copy SSH Public Key
 
 - Use Ansible playbooks: `ssh`, `ssh_key_management`
 
-# Install OpenJDK 8 on All Nodes
+## Install OpenJDK 8 on All Nodes
 
 - Use Ansible playbook: `install_openjdk`
 
-# Install Hadoop
+## Install Hadoop
 
 - Use Ansible playbook: `install_hadoop`
 - This playbook will:
@@ -26,7 +30,7 @@
     - Start the Hadoop NameNode, MapReduce, and Resource Manager (YARN) on the master node.
     - Start the Hadoop DataNode on the slave nodes.
 
-# Manually Edit `/etc/hosts` File for All Nodes
+## Manually Edit `/etc/hosts` File for All Nodes
 
 - Check the log for issues and find out which hostname Hadoop needs for resolution.
 - `/etc/hosts` for NameNode and DataNode:
@@ -38,21 +42,21 @@
 192.168.122.81 hadoop-slaves
 ```
 
-# Manually check and correct hostname for all node in cluster:
+## Manually check and correct hostname for all node in cluster:
 
 ```sh
 sudo hostname -b <correct_hostname>
 ```
 This will ensure hadoop can resolve hostname correctly.
 
-# Create User Directory in HDFS
+## Create User Directory in HDFS
 
 ```sh
 cd /opt/hadoop-3.4.1
 bin/hdfs dfs -mkdir /user/devops
 ```
 
-# Demo with an Example Job
+## Demo with an Example Job
 
 - First, create an input folder in HDFS:
     User exec: devops
