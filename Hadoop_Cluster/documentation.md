@@ -1,9 +1,9 @@
-# HADOOP CLUSTER DOCUMENTATION
+# HADOOP CLUSTER DOCUMENTATION <!-- title: Your Title -->
 
 **Author:** Pham Tung Lam  
 **Date Released:** February 11, 2025
 
-- [HADOOP CLUSTER DOCUMENTATION](#hadoop-cluster-documentation)
+- [HADOOP CLUSTER DOCUMENTATION ](#hadoop-cluster-documentation-)
   - [1. Hadoop Introduction:](#1-hadoop-introduction)
   - [2. HDFS Architecture Overview](#2-hdfs-architecture-overview)
     - [a. NameNode (Master)](#a-namenode-master)
