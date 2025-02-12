@@ -200,17 +200,17 @@ graph TD;
         subgraph Hadoop Cluster
                 direction TB;
                 A[hadoop-master<br>IP: 192.168.122.102]
-                A -->|ResourceManager| RM[ResourceManager]
-                A -->|NameNode| NN[NameNode]
-                A -->|SecondaryNameNode| SNN[SecondaryNameNode]
+                A --> RM[ResourceManager]
+                A --> NN[NameNode]
+                A --> SNN[SecondaryNameNode]
                 
                 B[hadoop-slaves<br>IP: 192.168.122.81]
-                B -->|DataNode| DN1[DataNode]
-                B -->|NodeManager| NM1[NodeManager]
+                B --> DN1[DataNode]
+                B --> NM1[NodeManager]
                 
                 C[ubuntu<br>IP: 192.168.122.27]
-                C -->|DataNode| DN2[DataNode]
-                C -->|NodeManager| NM2[NodeManager]
+                C --> DN2[DataNode]
+                C --> NM2[NodeManager]
         end
 ```
 
