@@ -30,6 +30,41 @@
     - [7.1. Storing Data:](#71-storing-data)
     - [7.2. Run MapReduce Job:](#72-run-mapreduce-job)
     - [7.3. Run Custom MapReduce Code:](#73-run-custom-mapreduce-code)
+- [Some Advance Example to Try](#some-advance-example-to-try)
+  - [**Inverted Index Example in Hadoop (Java \& Python)**](#inverted-index-example-in-hadoop-java--python)
+- [**1️⃣ Java Implementation (MapReduce)**](#1️⃣-java-implementation-mapreduce)
+    - [**How It Works**](#how-it-works)
+    - [**Step 1: Java Code for Inverted Index**](#step-1-java-code-for-inverted-index)
+      - [**Mapper Class (Extract Words \& Filenames)**](#mapper-class-extract-words--filenames)
+      - [**Reducer Class (Aggregate Files per Word)**](#reducer-class-aggregate-files-per-word)
+      - [**Driver Class (Run the Job)**](#driver-class-run-the-job)
+    - [**Step 2: Compile and Package**](#step-2-compile-and-package)
+    - [**Step 3: Run the Job**](#step-3-run-the-job)
+    - [**Sample Input (HDFS `/input/file1.txt` and `/input/file2.txt`)**](#sample-input-hdfs-inputfile1txt-and-inputfile2txt)
+    - [**Expected Output (`/output/part-r-00000`)**](#expected-output-outputpart-r-00000)
+- [**2️⃣ Python Implementation (Hadoop Streaming)**](#2️⃣-python-implementation-hadoop-streaming)
+    - [**Step 1: Python Mapper (`mapper.py`)**](#step-1-python-mapper-mapperpy)
+    - [**Step 2: Python Reducer (`reducer.py`)**](#step-2-python-reducer-reducerpy)
+    - [**Step 3: Make Scripts Executable**](#step-3-make-scripts-executable)
+    - [**Step 4: Run Hadoop Streaming**](#step-4-run-hadoop-streaming)
+    - [**Expected Output (`/output/part-00000`)**](#expected-output-outputpart-00000)
+  - [**Conclusion**](#conclusion)
+  - [**Example 4: Joins in Hadoop (Map-Side Join)**](#example-4-joins-in-hadoop-map-side-join)
+  - [**📌 Use Case: Joining User Data and Transaction Data**](#-use-case-joining-user-data-and-transaction-data)
+    - [**🔹 Sample Data**](#-sample-data)
+      - [**Users (`users.txt`)**](#users-userstxt)
+      - [**Transactions (`transactions.txt`)**](#transactions-transactionstxt)
+    - [**📌 Expected Output** (Join on `user_id`)](#-expected-output-join-on-user_id)
+  - [**📌 Step 1: Upload Data to HDFS**](#-step-1-upload-data-to-hdfs)
+  - [**📌 Step 2: Java MapReduce Implementation**](#-step-2-java-mapreduce-implementation)
+    - [**1️⃣ Mapper (JoinMapper.java)**](#1️⃣-mapper-joinmapperjava)
+    - [**2️⃣ Driver (JoinDriver.java)**](#2️⃣-driver-joindriverjava)
+  - [**📌 Step 3: Compile and Package Java Code**](#-step-3-compile-and-package-java-code)
+  - [**📌 Step 4: Run Java MapReduce Job**](#-step-4-run-java-mapreduce-job)
+  - [**📌 Step 5: Python MapReduce Implementation**](#-step-5-python-mapreduce-implementation)
+    - [**1️⃣ Python Mapper (`join_mapper.py`)**](#1️⃣-python-mapper-join_mapperpy)
+  - [**📌 Step 6: Run Python MapReduce Job**](#-step-6-run-python-mapreduce-job)
+  - [**📌 Expected Output**](#-expected-output)
 
 
 ## 1. Hadoop Introduction:
@@ -408,5 +443,491 @@ jar -cvf wordlength.jar -C wordlength_classes/ .
 3. Run Job:
 
 ```sh
-hadoop jar wordlength.jar WordLengthCount /user/PhaTLa/input /user/PhaTLa/wordlength_output
+hadoop jar wordlength.jar WordLengthCount /user/username/input /user/username/wordlength_output
 ```
+---
+
+# Some Advance Example to Try
+
+## **Inverted Index Example in Hadoop (Java & Python)**
+An **Inverted Index** is a key-value mapping of words to the documents in which they appear. It is widely used in search engines like Google to index web pages efficiently.
+
+---
+
+# **1️⃣ Java Implementation (MapReduce)**
+### **How It Works**
+1. **Mapper**  
+   - Reads an input file (text file).
+   - Emits **(word, filename)** pairs.
+
+2. **Reducer**  
+   - Aggregates the filenames for each word.
+   - Outputs **(word, list of filenames)**.
+
+---
+
+### **Step 1: Java Code for Inverted Index**
+Create a new Java project and ensure you have the **Hadoop 3.4.1** dependencies.
+
+#### **Mapper Class (Extract Words & Filenames)**
+```java
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.*;
+import java.io.IOException;
+
+public class InvertedIndexMapper extends Mapper<LongWritable, Text, Text, Text> {
+    private Text word = new Text();
+    private Text fileName = new Text();
+
+    @Override
+    protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+        // Get filename from context
+        String filePath = ((org.apache.hadoop.mapreduce.lib.input.FileSplit) context.getInputSplit()).getPath().getName();
+        fileName.set(filePath);
+
+        // Split words by non-alphanumeric characters
+        String[] words = value.toString().toLowerCase().split("\\W+");
+
+        for (String w : words) {
+            if (!w.isEmpty()) {
+                word.set(w);
+                context.write(word, fileName);
+            }
+        }
+    }
+}
+```
+
+---
+
+#### **Reducer Class (Aggregate Files per Word)**
+```java
+import org.apache.hadoop.io.*;
+import org.apache.hadoop.mapreduce.*;
+import java.io.IOException;
+import java.util.HashSet;
+
+public class InvertedIndexReducer extends Reducer<Text, Text, Text, Text> {
+    @Override
+    protected void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+        HashSet<String> fileSet = new HashSet<>();
+
+        for (Text value : values) {
+            fileSet.add(value.toString());
+        }
+
+        // Convert set to comma-separated string
+        String fileList = String.join(", ", fileSet);
+        context.write(key, new Text(fileList));
+    }
+}
+```
+
+---
+
+#### **Driver Class (Run the Job)**
+```java
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
+public class InvertedIndexDriver {
+    public static void main(String[] args) throws Exception {
+        if (args.length != 2) {
+            System.err.println("Usage: InvertedIndex <input path> <output path>");
+            System.exit(-1);
+        }
+
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Inverted Index");
+        
+        job.setJarByClass(InvertedIndexDriver.class);
+        job.setMapperClass(InvertedIndexMapper.class);
+        job.setReducerClass(InvertedIndexReducer.class);
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+
+        job.setInputFormatClass(TextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+```
+
+---
+
+### **Step 2: Compile and Package**
+```sh
+javac -classpath $(/opt/hadoop-3.4.1/bin/hadoop classpath) -d . InvertedIndexMapper.java InvertedIndexReducer.java InvertedIndexDriver.java
+
+jar cf invertedindex.jar *.class
+```
+
+---
+
+### **Step 3: Run the Job**
+```sh
+hadoop jar invertedindex.jar InvertedIndexDriver /input /output
+```
+Where `/input` is an HDFS directory containing text files.
+
+---
+
+### **Sample Input (HDFS `/input/file1.txt` and `/input/file2.txt`)**
+**file1.txt**  
+```
+hadoop is great
+big data is powerful
+```
+**file2.txt**  
+```
+hadoop supports big data
+```
+
+### **Expected Output (`/output/part-r-00000`)**
+```
+big        file1.txt, file2.txt
+data       file1.txt, file2.txt
+great      file1.txt
+hadoop     file1.txt, file2.txt
+is         file1.txt
+powerful   file1.txt
+supports   file2.txt
+```
+
+---
+
+# **2️⃣ Python Implementation (Hadoop Streaming)**
+Hadoop Streaming allows you to write the Mapper and Reducer in Python.
+
+---
+
+### **Step 1: Python Mapper (`mapper.py`)**
+```python
+#!/usr/bin/env python3
+import sys
+import os
+
+# Get the filename from Hadoop environment
+file_name = os.environ.get("map_input_file", "unknown_file").split("/")[-1]
+
+for line in sys.stdin:
+    words = line.strip().lower().split()
+    for word in words:
+        print(f"{word}\t{file_name}")
+```
+
+---
+
+### **Step 2: Python Reducer (`reducer.py`)**
+```python
+#!/usr/bin/env python3
+import sys
+
+current_word = None
+files = set()
+
+for line in sys.stdin:
+    word, filename = line.strip().split("\t")
+
+    if current_word == word:
+        files.add(filename)
+    else:
+        if current_word:
+            print(f"{current_word}\t{', '.join(files)}")
+        current_word = word
+        files = {filename}
+
+# Print the last word
+if current_word:
+    print(f"{current_word}\t{', '.join(files)}")
+```
+
+---
+
+### **Step 3: Make Scripts Executable**
+```sh
+chmod +x mapper.py reducer.py
+```
+
+---
+
+### **Step 4: Run Hadoop Streaming**
+```sh
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+    -input /input \
+    -output /output \
+    -mapper mapper.py \
+    -reducer reducer.py \
+    -file mapper.py \
+    -file reducer.py
+```
+
+---
+
+### **Expected Output (`/output/part-00000`)**
+```
+big        file1.txt, file2.txt
+data       file1.txt, file2.txt
+great      file1.txt
+hadoop     file1.txt, file2.txt
+is         file1.txt
+powerful   file1.txt
+supports   file2.txt
+```
+
+---
+
+## **Conclusion**
+- Java provides **fine-grained control** with the Hadoop MapReduce API.
+- Python is **simpler and faster to develop** using Hadoop Streaming.
+- Both solutions demonstrate how **HDFS stores data**, **MapReduce processes it**, and **the output is aggregated efficiently**.
+
+| Language | Compilation Required? | Performance |
+|----------|-----------------------|-------------|
+| Java     | Yes (JAR file)        | Fast        |
+| Python   | No (Direct Execution) | Slower      |
+
+- Java is better for production because of better performance.
+- Python is easier to write/debug but can be slower for large data.
+
+---
+## **Example 4: Joins in Hadoop (Map-Side Join)**  
+Map-Side Join is a technique in Hadoop where **one dataset is small enough** to fit in memory, allowing the **Mapper** to perform the join without a Reducer. This is **faster than Reduce-Side Joins** because there is no need for shuffling or sorting.
+
+---
+
+## **📌 Use Case: Joining User Data and Transaction Data**  
+We have two datasets:  
+1. **Users Dataset (`users.txt`)**: Contains user details.  
+2. **Transactions Dataset (`transactions.txt`)**: Contains transaction records.  
+
+### **🔹 Sample Data**
+#### **Users (`users.txt`)**  
+Format: `user_id, name, age, city`
+```
+1,Alex,30,New York
+2,Bob,25,San Francisco
+3,Charlie,28,Los Angeles
+```
+
+#### **Transactions (`transactions.txt`)**  
+Format: `trans_id, user_id, amount`
+```
+101,1,200.50
+102,2,150.00
+103,1,300.00
+104,3,450.75
+105,2,120.25
+```
+
+### **📌 Expected Output** (Join on `user_id`)  
+```
+101,Alex,200.50
+102,Bob,150.00
+103,Alex,300.00
+104,Charlie,450.75
+105,Bob,120.25
+```
+This output means **each transaction is joined with the corresponding user name**.
+
+---
+
+## **📌 Step 1: Upload Data to HDFS**  
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -mkdir -p /join_data
+/opt/hadoop-3.4.1/bin/hadoop fs -put users.txt /join_data/
+/opt/hadoop-3.4.1/bin/hadoop fs -put transactions.txt /join_data/
+```
+
+---
+
+## **📌 Step 2: Java MapReduce Implementation**  
+
+### **1️⃣ Mapper (JoinMapper.java)**
+- Loads the **Users dataset into memory (Distributed Cache)**.
+- Reads the **Transactions dataset** and performs a join in the **Mapper**.
+
+```java
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.filecache.DistributedCache;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class JoinMapper extends Mapper<Object, Text, Text, Text> {
+    private Map<String, String> userMap = new HashMap<>();
+    private Text outputKey = new Text();
+    private Text outputValue = new Text();
+
+    @Override
+    protected void setup(Context context) throws IOException {
+        Configuration conf = context.getConfiguration();
+        Path[] cacheFiles = context.getLocalCacheFiles(); // Load from Distributed Cache
+
+        if (cacheFiles != null && cacheFiles.length > 0) {
+            BufferedReader reader = new BufferedReader(new FileReader(cacheFiles[0].toString()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(",");
+                if (parts.length == 4) {
+                    userMap.put(parts[0], parts[1]); // user_id -> name
+                }
+            }
+            reader.close();
+        }
+    }
+
+    @Override
+    public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+        String[] parts = value.toString().split(",");
+        if (parts.length == 3) {
+            String userId = parts[1];
+            String userName = userMap.get(userId);
+            if (userName != null) {
+                outputKey.set(parts[0]); // trans_id
+                outputValue.set(userName + "," + parts[2]); // name, amount
+                context.write(outputKey, outputValue);
+            }
+        }
+    }
+}
+```
+
+---
+
+### **2️⃣ Driver (JoinDriver.java)**
+- **Adds `users.txt` to Distributed Cache**.
+- Runs the **MapReduce job** with `JoinMapper` only (**no Reducer needed**).
+
+```java
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.io.Text;
+
+public class JoinDriver {
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "map-side join");
+
+        job.setJarByClass(JoinDriver.class);
+        job.setMapperClass(JoinMapper.class);
+        job.setNumReduceTasks(0); // No reducer needed
+
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+
+        FileInputFormat.addInputPath(job, new Path(args[0])); // Transactions dataset
+        FileOutputFormat.setOutputPath(job, new Path(args[1])); // Output
+
+        // Add Users dataset to Distributed Cache
+        job.addCacheFile(new Path(args[2]).toUri());
+
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+```
+
+---
+
+## **📌 Step 3: Compile and Package Java Code**
+```sh
+javac -classpath $(/opt/hadoop-3.4.1/bin/hadoop classpath) -d . JoinMapper.java JoinDriver.java
+jar cf join.jar *.class
+```
+
+---
+
+## **📌 Step 4: Run Java MapReduce Job**
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -rm -r join_output
+/opt/hadoop-3.4.1/bin/hadoop jar join.jar JoinDriver join_data/transactions.txt join_output join_data/users.txt
+```
+
+Check the output:
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -cat join_output/part-m-00000
+```
+
+---
+
+## **📌 Step 5: Python MapReduce Implementation**
+Using **Hadoop Streaming**, we can achieve the same result in Python.
+
+---
+
+### **1️⃣ Python Mapper (`join_mapper.py`)**
+Loads the **Users dataset into memory** and performs the join.
+
+```python
+#!/usr/bin/env python3
+import sys
+
+# Load user data into memory
+user_map = {}
+with open("users.txt", "r") as f:
+    for line in f:
+        parts = line.strip().split(",")
+        if len(parts) == 4:
+            user_map[parts[0]] = parts[1]  # user_id -> name
+
+# Process transactions and join
+for line in sys.stdin:
+    parts = line.strip().split(",")
+    if len(parts) == 3:
+        user_id = parts[1]
+        if user_id in user_map:
+            print(f"{parts[0]}\t{user_map[user_id]},{parts[2]}")
+```
+Make it executable:
+```sh
+chmod +x join_mapper.py
+```
+
+---
+
+## **📌 Step 6: Run Python MapReduce Job**
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -rm -r /join_output_python
+
+/opt/hadoop-3.4.1/bin/hadoop jar /opt/hadoop-3.4.1/share/hadoop/tools/lib/hadoop-streaming-*.jar \
+    -input /join_data/transactions.txt \
+    -output /join_output_python \
+    -mapper join_mapper.py \
+    -file users.txt
+```
+
+Check results:
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -cat /join_output_python/part-00000
+```
+
+---
+
+## **📌 Expected Output**
+Both Java and Python should produce:
+```
+101,Alex,200.50
+102,Bob,150.00
+103,Alex,300.00
+104,Charlie,450.75
+105,Bob,120.25
+```
+
