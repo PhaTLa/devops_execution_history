@@ -220,11 +220,11 @@ body.marp-vscode blockquote {
 <ul>
 <li><a href="#hive-documentation">HIVE DOCUMENTATION</a>
 <ul>
-<li><a href="#1-hive-introduction">1. Hive Introduction:</a></li>
-<li><a href="#2-hive-architecture-overview">2. Hive architecture overview:</a>
+<li><a href="#1-hive-introduction"><strong>1. Hive Introduction</strong>:</a></li>
+<li><a href="#2-hive-architecture-overview">2. <strong>Hive architecture overview:</strong></a>
 <ul>
-<li><a href="#high-level-design-architecture-of-hive">High-Level Design Architecture of Hive:</a></li>
-<li><a href="#detailed-low-level-design-architecture-of-hive">Detailed Low-Level Design Architecture of Hive:</a></li>
+<li><a href="#high-level-design-architecture-of-hive"><strong>High-Level Design Architecture of Hive</strong>:</a></li>
+<li><a href="#detailed-low-level-design-architecture-of-hive"><strong>Detailed Low-Level Design Architecture of Hive:</strong></a></li>
 </ul>
 </li>
 <li><a href="#3-how-exactly-that-hive-work">3. <strong>How exactly that Hive work?</strong></a>
@@ -243,10 +243,11 @@ body.marp-vscode blockquote {
 <li><a href="#35-execution"><strong>3.5. Execution</strong>:</a></li>
 </ul>
 </li>
+<li><a href="#4-example-and-demo">4. <strong>Example and Demo</strong></a></li>
 </ul>
 </li>
 </ul>
-<h2 id="1-hive-introduction">1. Hive Introduction:</h2>
+<h2 id="1-hive-introduction"><strong>1. Hive Introduction</strong>:</h2>
 <p>Hive is a data warehouse infrastructure tool built on top of Hadoop for providing data summarization, query, and analysis. It facilitates reading, writing, and managing large datasets residing in distributed storage using SQL. Hive abstracts the complexity of Hadoop MapReduce by providing a simple SQL-like language called HiveQL.</p>
 <h3 id="main-components-of-hive-">Main Components of Hive: <!-- omit from toc --></h3>
 <ul>
@@ -258,8 +259,8 @@ body.marp-vscode blockquote {
 </ul>
 <h3 id="main-purpose-">Main Purpose: <!-- omit from toc --></h3>
 <p>Hive is designed to enable easy data summarization, ad-hoc querying, and analysis of large volumes of data. It is particularly useful for data warehousing tasks where SQL-based querying is preferred over complex MapReduce programming.</p>
-<h2 id="2-hive-architecture-overview">2. Hive architecture overview:</h2>
-<h3 id="high-level-design-architecture-of-hive">High-Level Design Architecture of Hive:</h3>
+<h2 id="2-hive-architecture-overview">2. <strong>Hive architecture overview:</strong></h2>
+<h3 id="high-level-design-architecture-of-hive"><strong>High-Level Design Architecture of Hive</strong>:</h3>
 <p>Hive's architecture is designed to provide a high-level abstraction over Hadoop's MapReduce framework. The main components of Hive's architecture include:</p>
 <ol>
 <li><strong>User Interface</strong>: Allows users to submit queries and other operations to the system.</li>
@@ -271,7 +272,7 @@ body.marp-vscode blockquote {
 </ol>
 <p><a href="https://editor.plantuml.com/uml/JP31IWCn48RlUOgXzts38WMxPGiL5D6Bz30cixkXQR9c9beGtzr9es8EWSdt9zzFDYoOfPo3MT2US29O3Vld7eR3TWN8CFjtWay3kbwUc3Bier0UqTAnuk8R6ZJsS83xd2mnGnyd7rjYVWiBjL1_8Ll4f_YVKuCE1L-HLNz7WYmfqzL_bco-ZB4X5QVLqAMqm6qeh2rQGMT_-mtRtMDpkf7hhUAXS-aZTZS_DQxxtvcgIQT0e-XKJVMnTPVzD4jNyOQYqx_v1W00"><img src="https://img.plantuml.biz/plantuml/svg/JP31IWCn48RlUOgXzts38WMxPGiL5D6Bz30cixkXQR9c9beGtzr9es8EWSdt9zzFDYoOfPo3MT2US29O3Vld7eR3TWN8CFjtWay3kbwUc3Bier0UqTAnuk8R6ZJsS83xd2mnGnyd7rjYVWiBjL1_8Ll4f_YVKuCE1L-HLNz7WYmfqzL_bco-ZB4X5QVLqAMqm6qeh2rQGMT_-mtRtMDpkf7hhUAXS-aZTZS_DQxxtvcgIQT0e-XKJVMnTPVzD4jNyOQYqx_v1W00" alt=""></a></p>
 <p>This high-level architecture allows Hive to efficiently manage and process large datasets by leveraging the distributed computing power of Hadoop.</p>
-<h3 id="detailed-low-level-design-architecture-of-hive">Detailed Low-Level Design Architecture of Hive:</h3>
+<h3 id="detailed-low-level-design-architecture-of-hive"><strong>Detailed Low-Level Design Architecture of Hive:</strong></h3>
 <p>The low-level design of Hive delves into the intricate details of how each component interacts and functions to provide a seamless data warehousing solution. The key components involved in the low-level architecture include:</p>
 <ol>
 <li><strong>Client Interface</strong>: This includes the command-line interface (CLI), web UI, and JDBC/ODBC drivers that allow users to interact with Hive.</li>
@@ -395,7 +396,9 @@ The optimizer can be enhanced to be cost-based. The sorted nature of output tabl
 <li><strong>Reduce Tasks</strong>: The sorted data is then processed by reduce tasks, which aggregate the results and produce the final output.</li>
 </ul>
 <p>Once all the jobs are completed, the results are saved back to HDFS or another specified output location. The Hive client can then retrieve the results for users to access.</p>
-
+<h2 id="4-example-and-demo">4. <strong>Example and Demo</strong></h2>
+<p>Click this <a href="https://phatla.github.io/devops_execution_history/Hive/examples.html">link</a> to navigate to Examples section</p>
+<!-- TODO: Replace above link to fit with others hosting platform -->
             
             <script async type="text/javascript">
 /* From extension bierner.markdown-mermaid */

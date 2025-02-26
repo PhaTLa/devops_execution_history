@@ -4,10 +4,10 @@
 **Date Released:** February 11, 2025
 
 - [HIVE DOCUMENTATION](#hive-documentation)
-  - [1. Hive Introduction:](#1-hive-introduction)
-  - [2. Hive architecture overview:](#2-hive-architecture-overview)
-    - [High-Level Design Architecture of Hive:](#high-level-design-architecture-of-hive)
-    - [Detailed Low-Level Design Architecture of Hive:](#detailed-low-level-design-architecture-of-hive)
+  - [**1. Hive Introduction**:](#1-hive-introduction)
+  - [2. **Hive architecture overview:**](#2-hive-architecture-overview)
+    - [**High-Level Design Architecture of Hive**:](#high-level-design-architecture-of-hive)
+    - [**Detailed Low-Level Design Architecture of Hive:**](#detailed-low-level-design-architecture-of-hive)
   - [3. **How exactly that Hive work?**](#3-how-exactly-that-hive-work)
     - [3.1. **Hive Metastore**:](#31-hive-metastore)
       - [**Metadata Objects**](#metadata-objects)
@@ -18,8 +18,9 @@
     - [**3.3. Compiler**](#33-compiler)
     - [**3.4. Optimizer**](#34-optimizer)
     - [**3.5. Execution**:](#35-execution)
+  - [4. **Example and Demo**](#4-example-and-demo)
 
-## 1. Hive Introduction:
+## **1. Hive Introduction**:
 Hive is a data warehouse infrastructure tool built on top of Hadoop for providing data summarization, query, and analysis. It facilitates reading, writing, and managing large datasets residing in distributed storage using SQL. Hive abstracts the complexity of Hadoop MapReduce by providing a simple SQL-like language called HiveQL.
 
 ### Main Components of Hive: <!-- omit from toc -->
@@ -32,9 +33,9 @@ Hive is a data warehouse infrastructure tool built on top of Hadoop for providin
 ### Main Purpose: <!-- omit from toc -->
 Hive is designed to enable easy data summarization, ad-hoc querying, and analysis of large volumes of data. It is particularly useful for data warehousing tasks where SQL-based querying is preferred over complex MapReduce programming.
 
-## 2. Hive architecture overview:
+## 2. **Hive architecture overview:**
 
-### High-Level Design Architecture of Hive:
+### **High-Level Design Architecture of Hive**:
 
 Hive's architecture is designed to provide a high-level abstraction over Hadoop's MapReduce framework. The main components of Hive's architecture include:
 
@@ -49,7 +50,7 @@ Hive's architecture is designed to provide a high-level abstraction over Hadoop'
 
 This high-level architecture allows Hive to efficiently manage and process large datasets by leveraging the distributed computing power of Hadoop.
 
-### Detailed Low-Level Design Architecture of Hive:
+### **Detailed Low-Level Design Architecture of Hive:**
 
 The low-level design of Hive delves into the intricate details of how each component interacts and functions to provide a seamless data warehousing solution. The key components involved in the low-level architecture include:
 
@@ -176,3 +177,10 @@ After generating the physical plan, Hive submits the jobs to the Hadoop cluster:
 - **Reduce Tasks**: The sorted data is then processed by reduce tasks, which aggregate the results and produce the final output.
 
 Once all the jobs are completed, the results are saved back to HDFS or another specified output location. The Hive client can then retrieve the results for users to access.
+
+
+## 4. **Example and Demo**
+
+Click this [link](https://phatla.github.io/devops_execution_history/Hive/examples.html) to navigate to Examples section
+
+<!-- TODO: Replace above link to fit with others hosting platform -->

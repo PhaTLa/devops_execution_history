@@ -1,3 +1,8 @@
+# HIVE EXAMPLE <!-- title: Your Title --> <!-- omit from toc --> 
+
+Click [here](https://phatla.github.io/devops_execution_history/Hive/documentation.html) to back to Document page <!-- omit from toc -->
+---
+- [**PREQUISITE:**](#prequisite)
 - [**1. Building an ETL Workflow in Hive**](#1-building-an-etl-workflow-in-hive)
   - [**🔹 Step 1: Extract - Load Raw Data into Hive**](#-step-1-extract---load-raw-data-into-hive)
     - [**1.1 Create a Raw Data Table**](#11-create-a-raw-data-table)
@@ -40,6 +45,14 @@
   - [**🔹 Step 5: Auditing and Monitoring**](#-step-5-auditing-and-monitoring)
   - [**🔹 Summary of Security Measures**](#-summary-of-security-measures)
   - [**🔹 Next Steps**](#-next-steps)
+
+---
+
+# **PREQUISITE:**
+
+- Hive server (hive-metastore, hiveserver2, thrift, beelline, MySQL or Derby) up and running 
+- Hadoop (Yarn, MapReduce, hdfs) up and running.
+- Hive is connected to Hadoop cluster (remote or local)
 
 ---
 
