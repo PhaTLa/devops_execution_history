@@ -65,6 +65,23 @@
     - [**1️⃣ Python Mapper (`join_mapper.py`)**](#1️⃣-python-mapper-join_mapperpy)
   - [**📌 Step 6: Run Python MapReduce Job**](#-step-6-run-python-mapreduce-job)
   - [**📌 Expected Output**](#-expected-output)
+  - [**Example 6: Running a Hive Query on HDFS Data**](#example-6-running-a-hive-query-on-hdfs-data)
+  - [**📌 Step 1: Prepare the Input Data**](#-step-1-prepare-the-input-data)
+    - [**Employee Data (`employees.csv`)**](#employee-data-employeescsv)
+    - [**Department Data (`departments.csv`)**](#department-data-departmentscsv)
+  - [**📌 Step 2: Upload Data to HDFS**](#-step-2-upload-data-to-hdfs)
+  - [**📌 Step 3: Start Hive**](#-step-3-start-hive)
+  - [**📌 Step 4: Create Hive Tables**](#-step-4-create-hive-tables)
+    - [**1️⃣ Create an External Table for Employees**](#1️⃣-create-an-external-table-for-employees)
+    - [**2️⃣ Create an External Table for Departments**](#2️⃣-create-an-external-table-for-departments)
+  - [**📌 Step 5: Run Hive Queries**](#-step-5-run-hive-queries)
+    - [**1️⃣ Check if Data is Loaded**](#1️⃣-check-if-data-is-loaded)
+    - [**2️⃣ Find Employees in the Engineering Department**](#2️⃣-find-employees-in-the-engineering-department)
+    - [**3️⃣ Get Average Salary by Department**](#3️⃣-get-average-salary-by-department)
+    - [**4️⃣ Find Employees with Salary Above 60,000**](#4️⃣-find-employees-with-salary-above-60000)
+  - [**📌 Step 6: Exit Hive**](#-step-6-exit-hive)
+  - [**📌 Step 7: Run Hive Query from Terminal**](#-step-7-run-hive-query-from-terminal)
+  - [**📌 Summary**](#-summary)
 
 
 ## 1. Hadoop Introduction:
@@ -930,4 +947,140 @@ Both Java and Python should produce:
 104,Charlie,450.75
 105,Bob,120.25
 ```
+---
+## **Example 6: Running a Hive Query on HDFS Data**  
+Apache Hive provides a SQL-like interface for querying large datasets stored in HDFS. In this example, we will:  
+✅ Load structured data into Hive tables.  
+✅ Run **SQL queries** on the data.  
+✅ Use **HDFS as storage** for Hive tables.  
+
+---
+
+## **📌 Step 1: Prepare the Input Data**  
+We will create a **sample dataset** about **employees and departments**.
+
+### **Employee Data (`employees.csv`)**  
+Format: `emp_id, name, age, department_id, salary`  
+```
+1,Alex,30,101,70000
+2,Bob,25,102,55000
+3,Charlie,28,101,65000
+4,David,35,103,80000
+5,Emma,26,102,60000
+```
+
+### **Department Data (`departments.csv`)**  
+Format: `dept_id, dept_name`  
+```
+101,Engineering
+102,Marketing
+103,Finance
+```
+
+---
+
+## **📌 Step 2: Upload Data to HDFS**  
+```sh
+/opt/hadoop-3.4.1/bin/hadoop fs -mkdir -p /hive_data/employees
+/opt/hadoop-3.4.1/bin/hadoop fs -mkdir -p /hive_data/departments
+
+/opt/hadoop-3.4.1/bin/hadoop fs -put employees.csv /hive_data/employees/
+/opt/hadoop-3.4.1/bin/hadoop fs -put departments.csv /hive_data/departments/
+```
+
+---
+
+## **📌 Step 3: Start Hive**
+```sh
+hive
+```
+
+---
+
+## **📌 Step 4: Create Hive Tables**  
+### **1️⃣ Create an External Table for Employees**  
+This table points directly to **HDFS location** `/hive_data/employees`.
+```sql
+CREATE EXTERNAL TABLE employees (
+    emp_id INT,
+    name STRING,
+    age INT,
+    department_id INT,
+    salary FLOAT
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/hive_data/employees';
+```
+
+### **2️⃣ Create an External Table for Departments**  
+```sql
+CREATE EXTERNAL TABLE departments (
+    dept_id INT,
+    dept_name STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE
+LOCATION '/hive_data/departments';
+```
+
+---
+
+## **📌 Step 5: Run Hive Queries**
+### **1️⃣ Check if Data is Loaded**
+```sql
+SELECT * FROM employees;
+SELECT * FROM departments;
+```
+
+### **2️⃣ Find Employees in the Engineering Department**  
+```sql
+SELECT e.name, e.age, e.salary, d.dept_name
+FROM employees e
+JOIN departments d
+ON e.department_id = d.dept_id
+WHERE d.dept_name = 'Engineering';
+```
+
+### **3️⃣ Get Average Salary by Department**  
+```sql
+SELECT d.dept_name, AVG(e.salary) AS avg_salary
+FROM employees e
+JOIN departments d
+ON e.department_id = d.dept_id
+GROUP BY d.dept_name;
+```
+
+### **4️⃣ Find Employees with Salary Above 60,000**  
+```sql
+SELECT name, salary FROM employees WHERE salary > 60000;
+```
+
+---
+
+## **📌 Step 6: Exit Hive**
+```sql
+exit;
+```
+
+---
+
+## **📌 Step 7: Run Hive Query from Terminal**  
+Instead of opening the Hive shell, we can run a query **directly from the command line**:
+```sh
+hive -e "SELECT name, salary FROM employees WHERE salary > 60000;"
+```
+
+---
+
+## **📌 Summary**
+| Feature               | Hive |
+|----------------------|------|
+| **Storage** | HDFS |
+| **Query Language** | SQL (HiveQL) |
+| **Schema Type** | Schema-on-read |
+| **Optimized for** | Analytical Queries |
+| **Integration** | Works with Spark, Hadoop, Presto |
 

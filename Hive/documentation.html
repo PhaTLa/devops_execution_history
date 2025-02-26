@@ -2,7 +2,7 @@
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>HADOOP CLUSTER DOCUMENTATION</title>
+            <title>HIVE DOCUMENTATION</title>
             <style>
 /* From extension vscode.github */
 /*---------------------------------------------------------------------------------------------
@@ -91,8 +91,7 @@ body.marp-vscode blockquote {
 }
 
 </style>
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
-<link href="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.css" rel="stylesheet" type="text/css">
+            
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/markdown.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/Microsoft/vscode/extensions/markdown-language-features/media/highlight.css">
 <style>
@@ -215,1084 +214,189 @@ body.marp-vscode blockquote {
             <span id="markdown-mermaid" aria-hidden="true"
                     data-dark-mode-theme="dark"
                     data-light-mode-theme="default"></span>
-                <h1 id="hadoop-cluster-documentation-">HADOOP CLUSTER DOCUMENTATION <!-- title: Your Title --></h1>
+                <h1 id="hive-documentation">HIVE DOCUMENTATION<!-- title: Your Title --></h1>
 <p><strong>Author:</strong> Pham Tung Lam<br>
 <strong>Date Released:</strong> February 11, 2025</p>
 <ul>
-<li><a href="#hadoop-cluster-documentation-">HADOOP CLUSTER DOCUMENTATION </a>
+<li><a href="#hive-documentation">HIVE DOCUMENTATION</a>
 <ul>
-<li><a href="#1-hadoop-introduction">1. Hadoop Introduction:</a></li>
-<li><a href="#2-hdfs-architecture-overview">2. HDFS Architecture Overview</a>
+<li><a href="#1-hive-introduction">1. Hive Introduction:</a></li>
+<li><a href="#2-hive-architecture-overview">2. Hive architecture overview:</a>
 <ul>
-<li><a href="#a-namenode-master">a. NameNode (Master)</a></li>
-<li><a href="#b-datanode-slave">b. DataNode (Slave)</a></li>
-<li><a href="#c-secondary-namenode">c. Secondary NameNode</a></li>
+<li><a href="#high-level-design-architecture-of-hive">High-Level Design Architecture of Hive:</a></li>
+<li><a href="#detailed-low-level-design-architecture-of-hive">Detailed Low-Level Design Architecture of Hive:</a></li>
 </ul>
 </li>
-<li><a href="#3-how-data-is-stored-in-hdfs">3. How Data is Stored in HDFS</a>
+<li><a href="#3-how-exactly-that-hive-work">3. <strong>How exactly that Hive work?</strong></a>
 <ul>
-<li><a href="#a-file-to-blocks-mapping">a. File to Blocks Mapping</a></li>
-<li><a href="#b-block-storage-mechanism">b. Block Storage Mechanism</a></li>
-<li><a href="#c-replication-strategy">c. Replication Strategy</a></li>
+<li><a href="#31-hive-metastore">3.1. <strong>Hive Metastore</strong>:</a>
+<ul>
+<li><a href="#metadata-objects"><strong>Metadata Objects</strong></a></li>
+<li><a href="#mechanicism"><strong>Mechanicism</strong></a></li>
+<li><a href="#benefits"><strong>Benefits</strong></a></li>
+<li><a href="#criticism"><strong>Criticism</strong></a></li>
 </ul>
 </li>
-<li><a href="#4-how-hdfs-manages-data">4. How HDFS Manages Data</a>
-<ul>
-<li><a href="#a-write-process">a. Write Process</a></li>
-<li><a href="#b-read-process">b. Read Process</a></li>
-<li><a href="#c-fault-tolerance-and-self-healing">c. Fault Tolerance and Self-Healing</a></li>
-</ul>
-</li>
-<li><a href="#5-data-storage">5. Data Storage</a>
-<ul>
-<li><a href="#51-metadata-fsimage--editlogs">5.1. Metadata (FsImage &amp; EditLogs)</a></li>
-<li><a href="#52-hdfs-file-types-and-storage">5.2: HDFS File Types and Storage</a></li>
-</ul>
-</li>
-<li><a href="#6-my-hadoop-cluster">6. My Hadoop Cluster</a>
-<ul>
-<li><a href="#61-topology">6.1. Topology:</a></li>
-<li><a href="#62-cluster-operation">6.2. Cluster Operation:</a></li>
-<li><a href="#63-what-hadoop-cluster-can-do">6.3. What Hadoop Cluster can do:</a></li>
-<li><a href="#64-integration-with-hive-spark-and-oozie">6.4. Integration with Hive, Spark, and Oozie:</a></li>
-<li><a href="#65-cooperation-between-components">6.5. Cooperation between Components:</a></li>
-</ul>
-</li>
-<li><a href="#7-some-example-for-hadoop-only">7. Some example (for Hadoop only):</a>
-<ul>
-<li><a href="#71-storing-data">7.1. Storing Data:</a></li>
-<li><a href="#72-run-mapreduce-job">7.2. Run MapReduce Job:</a></li>
-<li><a href="#73-run-custom-mapreduce-code">7.3. Run Custom MapReduce Code:</a></li>
+<li><a href="#32-hive-query-language"><strong>3.2. Hive Query Language</strong></a></li>
+<li><a href="#33-compiler"><strong>3.3. Compiler</strong></a></li>
+<li><a href="#34-optimizer"><strong>3.4. Optimizer</strong></a></li>
+<li><a href="#35-execution"><strong>3.5. Execution</strong>:</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#some-advance-example-to-try">Some Advance Example to Try</a>
+</ul>
+<h2 id="1-hive-introduction">1. Hive Introduction:</h2>
+<p>Hive is a data warehouse infrastructure tool built on top of Hadoop for providing data summarization, query, and analysis. It facilitates reading, writing, and managing large datasets residing in distributed storage using SQL. Hive abstracts the complexity of Hadoop MapReduce by providing a simple SQL-like language called HiveQL.</p>
+<h3 id="main-components-of-hive-">Main Components of Hive: <!-- omit from toc --></h3>
 <ul>
-<li><a href="#inverted-index-example-in-hadoop-java--python"><strong>Inverted Index Example in Hadoop (Java &amp; Python)</strong></a></li>
+<li><strong>Metastore</strong>: Central repository for storing metadata information.</li>
+<li><strong>Driver</strong>: Manages the lifecycle of a HiveQL statement.</li>
+<li><strong>Compiler</strong>: Compiles HiveQL into a directed acyclic graph of MapReduce jobs.</li>
+<li><strong>Execution Engine</strong>: Executes the tasks produced by the compiler.</li>
+<li><strong>HiveServer2</strong>: Provides a Thrift interface and JDBC/ODBC drivers for client interactions.</li>
 </ul>
-</li>
-<li><a href="#1%EF%B8%8F%E2%83%A3-java-implementation-mapreduce"><strong>1️⃣ Java Implementation (MapReduce)</strong></a>
-<ul>
-<li><a href="#how-it-works"><strong>How It Works</strong></a></li>
-<li><a href="#step-1-java-code-for-inverted-index"><strong>Step 1: Java Code for Inverted Index</strong></a>
-<ul>
-<li><a href="#mapper-class-extract-words--filenames"><strong>Mapper Class (Extract Words &amp; Filenames)</strong></a></li>
-<li><a href="#reducer-class-aggregate-files-per-word"><strong>Reducer Class (Aggregate Files per Word)</strong></a></li>
-<li><a href="#driver-class-run-the-job"><strong>Driver Class (Run the Job)</strong></a></li>
-</ul>
-</li>
-<li><a href="#step-2-compile-and-package"><strong>Step 2: Compile and Package</strong></a></li>
-<li><a href="#step-3-run-the-job"><strong>Step 3: Run the Job</strong></a></li>
-<li><a href="#sample-input-hdfs-inputfile1txt-and-inputfile2txt"><strong>Sample Input (HDFS <code>/input/file1.txt</code> and <code>/input/file2.txt</code>)</strong></a></li>
-<li><a href="#expected-output-outputpart-r-00000"><strong>Expected Output (<code>/output/part-r-00000</code>)</strong></a></li>
-</ul>
-</li>
-<li><a href="#2%EF%B8%8F%E2%83%A3-python-implementation-hadoop-streaming"><strong>2️⃣ Python Implementation (Hadoop Streaming)</strong></a>
-<ul>
-<li><a href="#step-1-python-mapper-mapperpy"><strong>Step 1: Python Mapper (<code>mapper.py</code>)</strong></a></li>
-<li><a href="#step-2-python-reducer-reducerpy"><strong>Step 2: Python Reducer (<code>reducer.py</code>)</strong></a></li>
-<li><a href="#step-3-make-scripts-executable"><strong>Step 3: Make Scripts Executable</strong></a></li>
-<li><a href="#step-4-run-hadoop-streaming"><strong>Step 4: Run Hadoop Streaming</strong></a></li>
-<li><a href="#expected-output-outputpart-00000"><strong>Expected Output (<code>/output/part-00000</code>)</strong></a></li>
-<li><a href="#conclusion"><strong>Conclusion</strong></a></li>
-<li><a href="#example-4-joins-in-hadoop-map-side-join"><strong>Example 4: Joins in Hadoop (Map-Side Join)</strong></a></li>
-<li><a href="#-use-case-joining-user-data-and-transaction-data"><strong>📌 Use Case: Joining User Data and Transaction Data</strong></a>
-<ul>
-<li><a href="#-sample-data"><strong>🔹 Sample Data</strong></a>
-<ul>
-<li><a href="#users-userstxt"><strong>Users (<code>users.txt</code>)</strong></a></li>
-<li><a href="#transactions-transactionstxt"><strong>Transactions (<code>transactions.txt</code>)</strong></a></li>
-</ul>
-</li>
-<li><a href="#-expected-output-join-on-user_id"><strong>📌 Expected Output</strong> (Join on <code>user_id</code>)</a></li>
-</ul>
-</li>
-<li><a href="#-step-1-upload-data-to-hdfs"><strong>📌 Step 1: Upload Data to HDFS</strong></a></li>
-<li><a href="#-step-2-java-mapreduce-implementation"><strong>📌 Step 2: Java MapReduce Implementation</strong></a>
-<ul>
-<li><a href="#1%EF%B8%8F%E2%83%A3-mapper-joinmapperjava"><strong>1️⃣ Mapper (JoinMapper.java)</strong></a></li>
-<li><a href="#2%EF%B8%8F%E2%83%A3-driver-joindriverjava"><strong>2️⃣ Driver (JoinDriver.java)</strong></a></li>
-</ul>
-</li>
-<li><a href="#-step-3-compile-and-package-java-code"><strong>📌 Step 3: Compile and Package Java Code</strong></a></li>
-<li><a href="#-step-4-run-java-mapreduce-job"><strong>📌 Step 4: Run Java MapReduce Job</strong></a></li>
-<li><a href="#-step-5-python-mapreduce-implementation"><strong>📌 Step 5: Python MapReduce Implementation</strong></a>
-<ul>
-<li><a href="#1%EF%B8%8F%E2%83%A3-python-mapper-join_mapperpy"><strong>1️⃣ Python Mapper (<code>join_mapper.py</code>)</strong></a></li>
-</ul>
-</li>
-<li><a href="#-step-6-run-python-mapreduce-job"><strong>📌 Step 6: Run Python MapReduce Job</strong></a></li>
-<li><a href="#-expected-output"><strong>📌 Expected Output</strong></a></li>
-<li><a href="#example-6-running-a-hive-query-on-hdfs-data"><strong>Example 6: Running a Hive Query on HDFS Data</strong></a></li>
-<li><a href="#-step-1-prepare-the-input-data"><strong>📌 Step 1: Prepare the Input Data</strong></a>
-<ul>
-<li><a href="#employee-data-employeescsv"><strong>Employee Data (<code>employees.csv</code>)</strong></a></li>
-<li><a href="#department-data-departmentscsv"><strong>Department Data (<code>departments.csv</code>)</strong></a></li>
-</ul>
-</li>
-<li><a href="#-step-2-upload-data-to-hdfs"><strong>📌 Step 2: Upload Data to HDFS</strong></a></li>
-<li><a href="#-step-3-start-hive"><strong>📌 Step 3: Start Hive</strong></a></li>
-<li><a href="#-step-4-create-hive-tables"><strong>📌 Step 4: Create Hive Tables</strong></a>
-<ul>
-<li><a href="#1%EF%B8%8F%E2%83%A3-create-an-external-table-for-employees"><strong>1️⃣ Create an External Table for Employees</strong></a></li>
-<li><a href="#2%EF%B8%8F%E2%83%A3-create-an-external-table-for-departments"><strong>2️⃣ Create an External Table for Departments</strong></a></li>
-</ul>
-</li>
-<li><a href="#-step-5-run-hive-queries"><strong>📌 Step 5: Run Hive Queries</strong></a>
-<ul>
-<li><a href="#1%EF%B8%8F%E2%83%A3-check-if-data-is-loaded"><strong>1️⃣ Check if Data is Loaded</strong></a></li>
-<li><a href="#2%EF%B8%8F%E2%83%A3-find-employees-in-the-engineering-department"><strong>2️⃣ Find Employees in the Engineering Department</strong></a></li>
-<li><a href="#3%EF%B8%8F%E2%83%A3-get-average-salary-by-department"><strong>3️⃣ Get Average Salary by Department</strong></a></li>
-<li><a href="#4%EF%B8%8F%E2%83%A3-find-employees-with-salary-above-60000"><strong>4️⃣ Find Employees with Salary Above 60,000</strong></a></li>
-</ul>
-</li>
-<li><a href="#-step-6-exit-hive"><strong>📌 Step 6: Exit Hive</strong></a></li>
-<li><a href="#-step-7-run-hive-query-from-terminal"><strong>📌 Step 7: Run Hive Query from Terminal</strong></a></li>
-<li><a href="#-summary"><strong>📌 Summary</strong></a></li>
-</ul>
-</li>
-</ul>
-<h2 id="1-hadoop-introduction">1. Hadoop Introduction:</h2>
-<p>Apache Hadoop is an open-source software framework used for distributed storage and processing of large data sets using the MapReduce programming model. It is designed to scale up from a single server to thousands of machines, each offering local computation and storage. Hadoop provides a reliable, scalable, and efficient way to handle vast amounts of data, making it a popular choice for big data analytics.</p>
-<p>Key components of Hadoop include:</p>
-<ul>
-<li><strong>Hadoop Distributed File System (HDFS)</strong>: A distributed file system that stores data across multiple machines.</li>
-<li><strong>MapReduce</strong>: A programming model for processing large data sets with a distributed algorithm.</li>
-<li><strong>YARN (Yet Another Resource Negotiator)</strong>: A resource management layer for scheduling and managing cluster resources.</li>
-<li><strong>Hadoop Common</strong>: The common utilities and libraries that support other Hadoop modules.</li>
-</ul>
-<h2 id="2-hdfs-architecture-overview">2. HDFS Architecture Overview</h2>
-<p>HDFS has three main components:</p>
-<h3 id="a-namenode-master">a. NameNode (Master)</h3>
-<p>Manages the metadata (file namespace, directory structure, block mapping).
-Tracks where each block of a file is stored within the cluster.
-Handles file system operations (create, delete, rename, permissions).
-Stores metadata in memory for fast access and persists it in the FsImage and EditLogs.</p>
-<h3 id="b-datanode-slave">b. DataNode (Slave)</h3>
-<p>Stores actual data blocks of files.
-Periodically sends heartbeat and block reports to the NameNode.
-Performs read/write operations requested by clients.
-Handles replication of data blocks to ensure fault tolerance.</p>
-<h3 id="c-secondary-namenode">c. Secondary NameNode</h3>
-<p>It is not a backup for the NameNode but helps by periodically merging the EditLogs into FsImage to reduce metadata load.</p>
-<h2 id="3-how-data-is-stored-in-hdfs">3. How Data is Stored in HDFS</h2>
-<h3 id="a-file-to-blocks-mapping">a. File to Blocks Mapping</h3>
-<p>When a file is written to HDFS, it is split into fixed-size blocks (default 128MB or 256MB in modern Hadoop versions).
-Each block is stored across multiple DataNodes.
-The default replication factor is 3, meaning each block is copied to 3 different DataNodes for fault tolerance.</p>
-<h3 id="b-block-storage-mechanism">b. Block Storage Mechanism</h3>
-<p>Blocks are stored as physical files on the local filesystem of DataNodes (e.g., ext4, XFS).
-Each DataNode stores blocks in /data/hdfs/dn/ (default directory on DataNodes).
-Each block has a unique identifier and is immutable (cannot be modified, only read or deleted).</p>
-<h3 id="c-replication-strategy">c. Replication Strategy</h3>
-<p>NameNode ensures fault tolerance by replicating blocks across DataNodes.
-Placement policy:
-One replica on a local node.
-One replica on a different rack.
-Another replica on a different node in the same rack.
-If a DataNode fails, NameNode initiates block replication to maintain the required replication factor.</p>
-<h2 id="4-how-hdfs-manages-data">4. How HDFS Manages Data</h2>
-<h3 id="a-write-process">a. Write Process</h3>
+<h3 id="main-purpose-">Main Purpose: <!-- omit from toc --></h3>
+<p>Hive is designed to enable easy data summarization, ad-hoc querying, and analysis of large volumes of data. It is particularly useful for data warehousing tasks where SQL-based querying is preferred over complex MapReduce programming.</p>
+<h2 id="2-hive-architecture-overview">2. Hive architecture overview:</h2>
+<h3 id="high-level-design-architecture-of-hive">High-Level Design Architecture of Hive:</h3>
+<p>Hive's architecture is designed to provide a high-level abstraction over Hadoop's MapReduce framework. The main components of Hive's architecture include:</p>
 <ol>
-<li>Client sends a write request to NameNode.</li>
-<li>NameNode checks permissions and provides block allocation.</li>
-<li>Client writes data to the first DataNode, which then forwards it to the next DataNode in a pipeline.</li>
-<li>After successful writing, DataNodes send acknowledgment to the client and NameNode.</li>
+<li><strong>User Interface</strong>: Allows users to submit queries and other operations to the system.</li>
+<li><strong>MetaStore</strong>: Stores metadata about tables, columns, partitions, and the schema.</li>
+<li><strong>HiveQL Process Engine</strong>: Parses, compiles, and optimizes HiveQL queries.</li>
+<li><strong>Execution Engine</strong>: Executes the execution plans created by the HiveQL process engine.</li>
+<li><strong>HDFS</strong>: Hadoop Distributed File System, where the actual data resides.</li>
+<li><strong>MapReduce</strong>: The underlying framework used for processing the data.</li>
 </ol>
-<pre style="all:unset;"><div class="mermaid">sequenceDiagram
-    participant Client
-    participant NameNode
-    participant DataNode1
-    participant DataNode2
-    participant DataNode3
-
-    Client-&gt;&gt;NameNode: Request to write file
-    NameNode-&gt;&gt;Client: Check permissions and provide block allocation
-    Client-&gt;&gt;DataNode1: Write data block
-    DataNode1-&gt;&gt;DataNode2: Forward data block
-    DataNode2-&gt;&gt;DataNode3: Forward data block
-    DataNode1--&gt;&gt;Client: Acknowledge write success
-    DataNode2--&gt;&gt;DataNode1: Acknowledge write success
-    DataNode3--&gt;&gt;DataNode2: Acknowledge write success
-    DataNode1--&gt;&gt;NameNode: Report block write success
-    DataNode2--&gt;&gt;NameNode: Report block write success
-    DataNode3--&gt;&gt;NameNode: Report block write success</div></pre>
-<h3 id="b-read-process">b. Read Process</h3>
+<p><a href="https://editor.plantuml.com/uml/JP31IWCn48RlUOgXzts38WMxPGiL5D6Bz30cixkXQR9c9beGtzr9es8EWSdt9zzFDYoOfPo3MT2US29O3Vld7eR3TWN8CFjtWay3kbwUc3Bier0UqTAnuk8R6ZJsS83xd2mnGnyd7rjYVWiBjL1_8Ll4f_YVKuCE1L-HLNz7WYmfqzL_bco-ZB4X5QVLqAMqm6qeh2rQGMT_-mtRtMDpkf7hhUAXS-aZTZS_DQxxtvcgIQT0e-XKJVMnTPVzD4jNyOQYqx_v1W00"><img src="https://img.plantuml.biz/plantuml/svg/JP31IWCn48RlUOgXzts38WMxPGiL5D6Bz30cixkXQR9c9beGtzr9es8EWSdt9zzFDYoOfPo3MT2US29O3Vld7eR3TWN8CFjtWay3kbwUc3Bier0UqTAnuk8R6ZJsS83xd2mnGnyd7rjYVWiBjL1_8Ll4f_YVKuCE1L-HLNz7WYmfqzL_bco-ZB4X5QVLqAMqm6qeh2rQGMT_-mtRtMDpkf7hhUAXS-aZTZS_DQxxtvcgIQT0e-XKJVMnTPVzD4jNyOQYqx_v1W00" alt=""></a></p>
+<p>This high-level architecture allows Hive to efficiently manage and process large datasets by leveraging the distributed computing power of Hadoop.</p>
+<h3 id="detailed-low-level-design-architecture-of-hive">Detailed Low-Level Design Architecture of Hive:</h3>
+<p>The low-level design of Hive delves into the intricate details of how each component interacts and functions to provide a seamless data warehousing solution. The key components involved in the low-level architecture include:</p>
 <ol>
-<li>Client requests a file from NameNode.</li>
-<li>NameNode provides block locations.</li>
-<li>Client reads data directly from DataNodes in parallel for efficiency.</li>
-<li>If a DataNode is unavailable, the client fetches from another replica.</li>
+<li><strong>Client Interface</strong>: This includes the command-line interface (CLI), web UI, and JDBC/ODBC drivers that allow users to interact with Hive.</li>
+<li><strong>Compiler</strong>: The compiler translates HiveQL statements into a directed acyclic graph (DAG) of MapReduce jobs. It performs semantic analysis and query optimization.</li>
+<li><strong>Optimizer</strong>: The optimizer improves the execution plan by applying various optimization techniques such as predicate pushdown, join optimization, and partition pruning.</li>
+<li><strong>Planner</strong>: The planner generates the physical execution plan from the optimized logical plan.</li>
+<li><strong>Executor</strong>: The executor is responsible for executing the physical plan by interacting with the Hadoop MapReduce framework.</li>
+<li><strong>Metastore</strong>: The metastore is a central repository that stores metadata about the data, such as schema information, table definitions, and partition details.</li>
+<li><strong>SerDe</strong>: Serializer/Deserializer (SerDe) is used for reading and writing data in a specific format.</li>
+<li><strong>File Formats</strong>: Hive supports various file formats such as TextFile, SequenceFile, ORC, and Parquet for storing data in HDFS.</li>
 </ol>
-<pre style="all:unset;"><div class="mermaid">sequenceDiagram
-    participant Client
-    participant NameNode
-    participant DataNode1
-    participant DataNode2
-    participant DataNode3
-
-    Client-&gt;&gt;NameNode: Request file
-    NameNode-&gt;&gt;Client: Provide block locations
-    Client-&gt;&gt;DataNode1: Read block 1
-    Client-&gt;&gt;DataNode2: Read block 2
-    Client-&gt;&gt;DataNode3: Read block 3
-    DataNode1--&gt;&gt;Client: Send block 1
-    DataNode2--&gt;&gt;Client: Send block 2
-    DataNode3--&gt;&gt;Client: Send block 3
-    Note over Client: If DataNode1 is unavailable, read from another replica</div></pre>
-<h3 id="c-fault-tolerance-and-self-healing">c. Fault Tolerance and Self-Healing</h3>
+<p><a href="https://editor.plantuml.com/uml/RLBRIWCn47tFLmpxldyWKko5LYfMIl51VCXcfsqqcuGagrBflpj9rasL1Z8mvmpdp4moyO6xq7UACQ5CtqArvAqn5gQgzm5T1Tp3iHNV38RpifmjjgyPtdjsPinoySuF2DLHVc05kNG4TnuTh3HfxRaOwQGqNQ-Ia52oWC_Ox3ByYKr_GTpFxgO9VsiRaU3pNwSbsJ-jOUECGEzXhWzI_pCqdPKANNQrgZ2FDiXEdWRAs70gt4PnhGV6AdtDUlw5eW_IwD6LQX4llNE9oJ98IQ6sw6QOS8yj5dn1lSB2k8u7d-Xz5oxSMnvumptPFs3WdhIpR_UR3VRd-4ZnVINKzMsQEwrspE92nuGkr4uUZe60j8WO2XGtG3VLfp5YA7IQ88O2nQvp4ILZSun-5TpKDQs9iGdgbZxX3m00"><img src="https://img.plantuml.biz/plantuml/svg/RLBRIWCn47tFLmpxldyWKko5LYfMIl51VCXcfsqqcuGagrBflpj9rasL1Z8mvmpdp4moyO6xq7UACQ5CtqArvAqn5gQgzm5T1Tp3iHNV38RpifmjjgyPtdjsPinoySuF2DLHVc05kNG4TnuTh3HfxRaOwQGqNQ-Ia52oWC_Ox3ByYKr_GTpFxgO9VsiRaU3pNwSbsJ-jOUECGEzXhWzI_pCqdPKANNQrgZ2FDiXEdWRAs70gt4PnhGV6AdtDUlw5eW_IwD6LQX4llNE9oJ98IQ6sw6QOS8yj5dn1lSB2k8u7d-Xz5oxSMnvumptPFs3WdhIpR_UR3VRd-4ZnVINKzMsQEwrspE92nuGkr4uUZe60j8WO2XGtG3VLfp5YA7IQ88O2nQvp4ILZSun-5TpKDQs9iGdgbZxX3m00" alt=""></a></p>
+<p>This detailed low-level architecture highlights the flow of data and the interaction between various components within Hive. It ensures efficient query processing, optimization, and execution, leveraging the distributed nature of Hadoop.</p>
+<h2 id="3-how-exactly-that-hive-work">3. <strong>How exactly that Hive work?</strong></h2>
+<p><img src="https://hive.apache.org/attachments/27362072/47743299.png" alt=""></p>
+<h3 id="31-hive-metastore">3.1. <strong>Hive Metastore</strong>:</h3>
+<p>Hive Metastore, part of Apache Hive, is a distributed, fault-tolerant data warehouse system for large-scale analytics. It stores meta-information about data storages, allowing you to query everything from one place using Hive's HSQL dialect. Despite its name, Hive Metastore is independent from Hive.
+<br>
+The Metastore in Hive provides data abstraction and data discovery. Data abstraction allows users to reuse information about data formats, extractors, and loaders during table creation. Data discovery helps users find and explore specific data in the warehouse. Hive's metadata repository ensures data and metadata are synchronized, enabling efficient query processing.</p>
+<p><img src="https://blog.jetbrains.com/wp-content/uploads/2022/06/image-40.png" alt=""></p>
+<h4 id="metadata-objects"><strong>Metadata Objects</strong></h4>
 <ul>
-<li><strong>Heartbeat Monitoring</strong>: DataNodes send heartbeats to NameNode every 3 seconds. If a DataNode is unresponsive for 10 minutes, NameNode marks it dead and re-replicates blocks.</li>
-<li><strong>Rebalancing</strong>: HDFS automatically redistributes blocks to balance storage utilization.</li>
-<li><strong>Block Corruption Detection</strong>: DataNodes use checksums to verify data integrity.</li>
+<li>Database – is a namespace for tables. It can be used as an administrative unit in the future. The database ‘default’ is used for tables with no user-supplied database name.</li>
+<li>Table – Metadata for a table contains list of columns, owner, storage and SerDe information. It can also contain any user-supplied key and value data. Storage information includes location of the underlying data, file inout and output formats and bucketing information. SerDe metadata includes the implementation class of serializer and deserializer and any supporting information required by the implementation. All of this information can be provided during creation of the table.</li>
+<li>Partition – Each partition can have its own columns and SerDe and storage information. This facilitates schema changes without affecting older partitions.</li>
 </ul>
-<h2 id="5-data-storage">5. Data Storage</h2>
-<h3 id="51-metadata-fsimage--editlogs">5.1. Metadata (FsImage &amp; EditLogs)</h3>
-<p><em>This happen in namenode</em></p>
-<ul>
-<li><strong>FsImage</strong>: Stores a snapshot of the file system's metadata.</li>
-<li><strong>EditLogs</strong>: Logs all changes (create, delete, update).</li>
-<li><strong>NameNode</strong> loads FsImage into memory and applies EditLogs at startup.</li>
-<li><strong>Secondary NameNode</strong> periodically merges EditLogs into FsImage to prevent EditLogs from growing too large.</li>
-</ul>
-<h3 id="52-hdfs-file-types-and-storage">5.2: HDFS File Types and Storage</h3>
-<table>
-<thead>
-<tr>
-<th>Data Type</th>
-<th>Stored As</th>
-<th>Location</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>File metadata</td>
-<td>FsImage, EditLogs</td>
-<td>NameNode</td>
-</tr>
-<tr>
-<td>Data blocks</td>
-<td>Binary files</td>
-<td>DataNodes</td>
-</tr>
-<tr>
-<td>Checkpoints</td>
-<td>FsImage snapshots</td>
-<td>Secondary NameNode</td>
-</tr>
-<tr>
-<td>Logs</td>
-<td>EditLogs</td>
-<td>NameNode</td>
-</tr>
-</tbody>
-</table>
-<h2 id="6-my-hadoop-cluster">6. My Hadoop Cluster</h2>
-<h3 id="61-topology">6.1. Topology:</h3>
-<p>My Hadoop Cluster deployed on QEMU/KVM machines with this following spec:</p>
-<ul>
-<li><strong>OS</strong>: Ubuntu server 22.04 LTS (cloud-image)</li>
-<li><strong>Memory</strong>: 8GB</li>
-<li><strong>vCPU</strong>: 2</li>
-<li><strong>Disk</strong>: 50GB</li>
-<li><strong>Number of VM</strong>: 3 (1 Namenode, 2 Datanode)</li>
-</ul>
-<p>This is my Cluster topology:</p>
-<pre style="all:unset;"><div class="mermaid">graph TD;
-    subgraph Hadoop Cluster
-        direction TB;
-        A[hadoop-master&lt;br&gt;IP: 192.168.122.102] -- ssh --&gt; B[hadoop-slaves&lt;br&gt;IP: 192.168.122.81];
-        A[hadoop-master&lt;br&gt;IP: 192.168.122.102] -- ssh --&gt; C[ubuntu&lt;br&gt;IP: 192.168.122.27];
-    end</div></pre>
-<h3 id="62-cluster-operation">6.2. Cluster Operation:</h3>
-<p>In my Hadoop Cluster, the roles and responsibilities of each node are as follows:</p>
-<ul>
+<h4 id="mechanicism"><strong>Mechanicism</strong></h4>
+<p>Hive Metastore maps data to a simple relational structure, storing information about data locations in a metastore database (usually MySQL, Postgres, or Derby). The database schema is fluid and changes over time. The Metastore Thrift server, the main entry point for clients, uses the Thrift RPC protocol, preferred over gRPC for several reasons:</p>
+<ol>
+<li>It has typed exceptions. So you don’t just get a random exception from inside your RPC, but rather you can actually understand what’s going wrong.</li>
+<li>It has a rich standard library (if a set of predefined types can be called that).</li>
+<li>Like gRPC, it supports many languages, but in my opinion, Thrift’s generator produces much nicer code than gRPC’s generator does.</li>
+</ol>
+<p>The Thrift protocol, developed by Facebook for its Big Data ecosystem, is ideal for Hive and other ecosystems. The Thrift server, a simple application with APIs, provides information about data sources in Hive Metastore. It supports both typed and dynamically typed languages like Python. All clients, including Hive, communicate only with the Thrift server, which can be easily set up with a single Docker container for experiments.</p>
+<h4 id="benefits"><strong>Benefits</strong></h4>
+<p>Using Hive Metastore in this way provides four main benefits related to:</p>
+<ol>
 <li>
-<p><strong>hadoop-master</strong>:</p>
+<p><strong>Virtualization</strong>:</p>
+<p>Data analysts prefer to focus on their tables rather than the details of object storage. This need makes Hive Metastore essential, as it supports critical analytic workflows. New technologies ensure compatibility with Hive Metastore to maintain these workflows.</p>
+</li>
+<li>
+<p><strong>Discoverability</strong></p>
+<p>Hive Metastore acts as a catalog for collections in object storage, enabling data discovery when updated with new data. It can also store supplemental information like update frequency and ownership.</p>
+</li>
+<li>
+<p><strong>Schema Evolution</strong></p>
+<p>Managing mutable data sets over time can be challenging due to changes in records or schema. Hive Metastore records the schema for each data file, allowing access with the appropriate schema. This helps validate schema consistency and alert users to changes.</p>
+</li>
+<li>
+<p><strong>Performance</strong></p>
+<p>Since Hive Metastore maps the table to the underlying object, it allows the representation of a relational database as partitions according to the primary key supported by the object storage. The granularity of the partitions can be set by the user, and if partitions are balanced and their number is reasonable, this mapping allows improvement in query performance.</p>
+</li>
+</ol>
+<h4 id="criticism"><strong>Criticism</strong></h4>
+<ol>
+<li><strong>Scaling Thrift</strong>: Thrift, built on top of HTTP, works with many popular tools like HAProxy. However, understanding random Thrift traffic messages can be challenging.</li>
+<li><strong>Metastore as a Thin Layer</strong>: Large Hive tables can cause issues with Metastore due to Hive's partitioning and relational database limitations. Metastore can be used with other tools and without partitioning if needed.</li>
+<li><strong>Leaky Abstractions</strong>: Metastore may have more leaks than other abstractions, but this can sometimes be an opportunity for fine-tuning when you know what you're doing.</li>
+</ol>
+<h3 id="32-hive-query-language"><strong>3.2. Hive Query Language</strong></h3>
 <ul>
-<li><strong>ResourceManager</strong>: Manages the allocation of cluster resources and schedules jobs.</li>
-<li><strong>NameNode</strong>: Manages the metadata and namespace for the Hadoop Distributed File System (HDFS).</li>
-<li><strong>SecondaryNameNode</strong>: Performs periodic checkpoints of the HDFS metadata to prevent loss of data.</li>
+<li>HiveQL is an SQL-like query language for Hive.</li>
+<li>Mimics SQL syntax for creating tables, loading data, and querying tables.</li>
+<li>Allows embedding custom map-reduce scripts in any language using a row-based streaming interface.</li>
+<li>Custom scripts read rows from standard input and write rows to standard output.</li>
+<li>Flexibility of using any language comes with a performance hit due to row conversion.</li>
+<li>Users accept the performance hit for the flexibility of language choice.</li>
+<li><strong>Unique feature</strong>: multi-table insert, allowing multiple queries on the same input data with a single HiveQL query.</li>
+<li>Hive optimizes multi-table inserts to share input data scans, increasing throughput significantly.</li>
+</ul>
+<h3 id="33-compiler"><strong>3.3. Compiler</strong></h3>
+<ol>
+<li>
+<p><strong>Parser</strong></p>
+<ul>
+<li>Transforms a query string into a parse tree representation.</li>
 </ul>
 </li>
 <li>
-<p><strong>hadoop-slaves</strong> and <strong>ubuntu</strong>:</p>
+<p><strong>Semantic Analyser</strong></p>
 <ul>
-<li><strong>DataNode</strong>: Stores the actual data in HDFS and handles read/write requests from clients.</li>
-<li><strong>NodeManager</strong>: Manages the execution of individual tasks on each node and monitors resource usage.</li>
-</ul>
-</li>
-</ul>
-<p>The interaction between these components ensures efficient data storage, processing, and resource management across the cluster.</p>
-<p>Here is a detailed view of the processes running on each node:</p>
-<pre style="all:unset;"><div class="mermaid">graph TD;
-        subgraph Hadoop Cluster
-                direction TB;
-                A[hadoop-master&lt;br&gt;IP: 192.168.122.102]
-                A --&gt; RM[ResourceManager]
-                A --&gt; NN[NameNode]
-                A --&gt; SNN[SecondaryNameNode]
-                
-                B[hadoop-slaves&lt;br&gt;IP: 192.168.122.81]
-                B --&gt; DN1[DataNode]
-                B --&gt; NM1[NodeManager]
-                
-                C[ubuntu&lt;br&gt;IP: 192.168.122.27]
-                C --&gt; DN2[DataNode]
-                C --&gt; NM2[NodeManager]
-        end</div></pre>
-<h3 id="63-what-hadoop-cluster-can-do">6.3. What Hadoop Cluster can do:</h3>
-<p>The Hadoop Cluster described above is capable of efficiently storing and processing large datasets across multiple machines. With its distributed architecture, it can handle vast amounts of data by distributing the storage and computation tasks among the nodes in the cluster. The ResourceManager and NodeManagers ensure optimal resource allocation and job scheduling, while the NameNode and DataNodes manage the storage and retrieval of data in the Hadoop Distributed File System (HDFS). This setup allows for scalable and reliable big data analytics, making it suitable for tasks such as data mining, machine learning, and large-scale data processing.</p>
-<h3 id="64-integration-with-hive-spark-and-oozie">6.4. Integration with Hive, Spark, and Oozie:</h3>
-<p>The Hadoop Cluster can be extended with additional components such as Hive, Spark, and Oozie to enhance its capabilities and provide a comprehensive big data processing and analytics platform.</p>
-<h4 id="hive-">Hive: <!-- omit from toc --></h4>
-<p>Apache Hive is a data warehouse infrastructure built on top of Hadoop. It allows users to query and manage large datasets stored in HDFS using a SQL-like language called HiveQL. Hive translates these queries into MapReduce jobs, making it easier for users to perform data analysis without writing complex MapReduce code.</p>
-<p>Capabilities:</p>
-<ul>
-<li><strong>Data Warehousing</strong>: Store and manage large datasets in a structured format.</li>
-<li><strong>SQL-like Queries</strong>: Use HiveQL to perform complex queries and data analysis.</li>
-<li><strong>Integration with HDFS</strong>: Directly query data stored in the Hadoop Distributed File System.</li>
-</ul>
-<h4 id="spark-">Spark: <!-- omit from toc --></h4>
-<p>Apache Spark is a fast and general-purpose cluster-computing system that provides an interface for programming entire clusters with implicit data parallelism and fault tolerance. Spark can run on Hadoop clusters and leverage HDFS for storage.</p>
-<p>Capabilities:</p>
-<ul>
-<li><strong>In-Memory Processing</strong>: Perform data processing tasks in memory for faster execution.</li>
-<li><strong>Advanced Analytics</strong>: Support for machine learning, graph processing, and stream processing.</li>
-<li><strong>Integration with Hadoop</strong>: Utilize HDFS for data storage and YARN for resource management.</li>
-</ul>
-<h4 id="oozie-">Oozie: <!-- omit from toc --></h4>
-<p>Apache Oozie is a workflow scheduler system to manage Hadoop jobs. It allows users to define a sequence of jobs written in diverse languages such as MapReduce, Pig, Hive, and Spark, and manage their execution.</p>
-<p>Capabilities:</p>
-<ul>
-<li><strong>Workflow Automation</strong>: Define and manage complex job workflows.</li>
-<li><strong>Job Scheduling</strong>: Schedule jobs to run at specific times or based on data availability.</li>
-<li><strong>Integration with Hadoop Ecosystem</strong>: Coordinate jobs across various Hadoop components like Hive, Spark, and MapReduce.</li>
-</ul>
-<h3 id="65-cooperation-between-components">6.5. Cooperation between Components:</h3>
-<p>The integration of Hive, Spark, and Oozie with the Hadoop Cluster enhances its functionality and provides a robust platform for big data processing and analytics. Here is how these components cooperate:</p>
-<ul>
-<li><strong>Hive and Hadoop</strong>: Hive stores its metadata in a relational database and uses HDFS to store data. Queries written in HiveQL are converted into MapReduce jobs that run on the Hadoop cluster.</li>
-<li><strong>Spark and Hadoop</strong>: Spark can read data from HDFS, process it in-memory, and write the results back to HDFS. It can also use YARN for resource management, allowing it to coexist with other Hadoop jobs.</li>
-<li><strong>Oozie and Hadoop</strong>: Oozie workflows can include Hive, Spark, and MapReduce jobs, coordinating their execution and managing dependencies between them. This ensures that complex data processing pipelines can be automated and managed efficiently.</li>
-</ul>
-<p>By integrating these components, the Hadoop Cluster becomes a powerful and versatile platform capable of handling a wide range of big data tasks, from data warehousing and SQL querying to advanced analytics and workflow automation.</p>
-<h2 id="7-some-example-for-hadoop-only">7. Some example (for Hadoop only):</h2>
-<h3 id="71-storing-data">7.1. Storing Data:</h3>
-<p>We can use Hadoop HDFS CLI to interact with file system as any others normal file system.</p>
-<p>Example:</p>
-<ul>
-<li>To create directory in HDFS, we use:</li>
-</ul>
-<pre><code class="language-sh">hdfs dfs -<span class="hljs-built_in">mkdir</span> /dir
-</code></pre>
-<ul>
-<li>To list all directory and file in a directory:</li>
-</ul>
-<pre><code class="language-sh">hdfs dfs -<span class="hljs-built_in">ls</span> /dir
-</code></pre>
-<ul>
-<li>Or we can copy a file from local machine to HDFS:</li>
-</ul>
-<pre><code class="language-sh">hdfs dfs -put /local/dir/file.name /hdfs/dir/
-</code></pre>
-<ul>
-<li>And download a copy of hdfs file to local machine:</li>
-</ul>
-<pre><code class="language-sh">hdfs dfs -get /hdfs/dir/file.name /local/dir/
-</code></pre>
-<h3 id="72-run-mapreduce-job">7.2. Run MapReduce Job:</h3>
-<p>Hadoop can run MapReduce job, in order to run, hadoop require the input are in hdfs, output directory will be create automatically</p>
-<ol>
-<li>Prepare input directory:</li>
-</ol>
-<pre><code class="language-sh">hdfs dfs -<span class="hljs-built_in">mkdir</span> /user/username/input
-</code></pre>
-<ul>
-<li><strong>Syntax</strong>: hdfs dfs -mkdir &lt;directory_path&gt;</li>
-<li><strong>Function</strong>: Creates a new directory in HDFS at the specified path. Here, it creates the directory <code>/user/username/input</code>.</li>
-</ul>
-<ol start="2">
-<li>Make input file (for example):</li>
-</ol>
-<pre><code class="language-sh"><span class="hljs-built_in">cd</span> /home/username/workspace
-<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s&quot;</span> &gt; input.txt
-</code></pre>
-<ul>
-<li><strong>Syntax</strong>:
-<ul>
-<li><code>cd &lt;directory_path&gt;</code>: Changes the current directory to the specified path.</li>
-<li><code>echo &quot;&lt;text&gt;&quot; &gt; &lt;file_name&gt;</code>: Writes the specified text to a file.</li>
-</ul>
-</li>
-<li><strong>Function</strong>: Changes the directory to <code>/home/username/workspace</code> and creates a file named <code>input.txt</code> with the given text.</li>
-</ul>
-<ol start="3">
-<li>Upload input file to HDFS input directory:</li>
-</ol>
-<pre><code class="language-sh">hdfs dfs -put /home/username/workspace/input.txt /user/username/input/
-</code></pre>
-<ul>
-<li><strong>Syntax</strong>: <code>hdfs dfs -put &lt;local_file_path&gt; &lt;hdfs_directory_path&gt;</code></li>
-<li><strong>Function</strong>: Uploads the local file to the specified directory in HDFS. Here, it uploads <code>input.txt</code> to <code>/user/username/input/</code>.</li>
-</ul>
-<ol start="4">
-<li>Run sample MapReduce job:</li>
-</ol>
-<p><em>This example code is shipped along with hadoop installation</em></p>
-<pre><code class="language-sh">hadoop jar share/hadoop/mapreduce/hadoop-mapreduce-examples-3.4.1.jar wordcount input output
-</code></pre>
-<ul>
-<li><strong>Syntax</strong>: <code>hadoop jar &lt;jar_file&gt; &lt;class_name&gt; &lt;input_path&gt; &lt;output_path&gt;</code></li>
-<li><strong>Function</strong>: Runs a MapReduce job using the specified JAR file and class. Here, it runs the <code>wordcount</code> example using <code>input</code> as the input directory and <code>output</code> as the output directory.</li>
-</ul>
-<ol start="5">
-<li>View the result:</li>
-</ol>
-<p>You can view the MapReduce job result in a file in <code>output</code> directory in hdfs</p>
-<pre><code class="language-sh">hdfs dfs -<span class="hljs-built_in">cat</span> /user/username/output/part-r-00000
-</code></pre>
-<ul>
-<li><strong>Syntax</strong>: <code>hdfs dfs -cat &lt;file_path&gt;</code></li>
-<li><strong>Function</strong>: Displays the contents of a file in HDFS. Here, it shows the contents of the file located at <code>/user/username/output/part-r-00000</code>.</li>
-</ul>
-<h4 id="note-explanation-of-output-file-name-part-r-00000-">NOTE: Explanation of Output File Name <code>part-r-00000</code> <!-- omit from toc --></h4>
-<p>In Hadoop MapReduce, the output file name part-r-00000 follows a specific naming convention:</p>
-<ul>
-<li><code>part</code>: Indicates that this file is part of the output from a MapReduce job.</li>
-<li><code>r</code>: Stands for &quot;reduce&quot;, indicating that this file is the result of the reduce phase.</li>
-<li><code>00000</code>: A sequence number assigned to the output file. If there are multiple reducers, each reducer will produce a separate output file with a unique sequence number (e.g., part-r-00001, part-r-00002, etc.).</li>
-</ul>
-<h3 id="73-run-custom-mapreduce-code">7.3. Run Custom MapReduce Code:</h3>
-<p>Hadoop can also run your custom code as a job.</p>
-<ol>
-<li>Write a custom Mapreduce code:</li>
-</ol>
-<p>Create Java file:</p>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.conf.Configuration;
-<span class="hljs-keyword">import</span> org.apache.hadoop.fs.Path;
-<span class="hljs-keyword">import</span> org.apache.hadoop.io.IntWritable;
-<span class="hljs-keyword">import</span> org.apache.hadoop.io.Text;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Job;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Mapper;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Reducer;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-
-<span class="hljs-keyword">import</span> java.io.IOException;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">WordLengthCount</span> {
-
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TokenizerMapper</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Mapper</span>&lt;Object, Text, IntWritable, IntWritable&gt; {
-        <span class="hljs-keyword">private</span> <span class="hljs-keyword">final</span> <span class="hljs-keyword">static</span> <span class="hljs-type">IntWritable</span> <span class="hljs-variable">one</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IntWritable</span>(<span class="hljs-number">1</span>);
-        <span class="hljs-keyword">private</span> <span class="hljs-type">IntWritable</span> <span class="hljs-variable">wordLength</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IntWritable</span>();
-
-        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">map</span><span class="hljs-params">(Object key, Text value, Context context)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException {
-            String[] words = value.toString().split(<span class="hljs-string">&quot;\\s+&quot;</span>);
-            <span class="hljs-keyword">for</span> (String word : words) {
-                wordLength.set(word.length());
-                context.write(wordLength, one);
-            }
-        }
-    }
-
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">IntSumReducer</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Reducer</span>&lt;IntWritable, IntWritable, IntWritable, IntWritable&gt; {
-        <span class="hljs-keyword">private</span> <span class="hljs-type">IntWritable</span> <span class="hljs-variable">result</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IntWritable</span>();
-
-        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">reduce</span><span class="hljs-params">(IntWritable key, Iterable&lt;IntWritable&gt; values, Context context)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException {
-            <span class="hljs-type">int</span> <span class="hljs-variable">sum</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>;
-            <span class="hljs-keyword">for</span> (IntWritable val : values) {
-                sum += val.get();
-            }
-            result.set(sum);
-            context.write(key, result);
-        }
-    }
-
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
-        <span class="hljs-type">Configuration</span> <span class="hljs-variable">conf</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Configuration</span>();
-        <span class="hljs-type">Job</span> <span class="hljs-variable">job</span> <span class="hljs-operator">=</span> Job.getInstance(conf, <span class="hljs-string">&quot;word length count&quot;</span>);
-        job.setJarByClass(WordLengthCount.class);
-        job.setMapperClass(TokenizerMapper.class);
-        job.setCombinerClass(IntSumReducer.class);
-        job.setReducerClass(IntSumReducer.class);
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(IntWritable.class);
-        FileInputFormat.addInputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">0</span>]));
-        FileOutputFormat.setOutputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">1</span>]));
-        System.exit(job.waitForCompletion(<span class="hljs-literal">true</span>) ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
-    }
-}
-</code></pre>
-<ol start="2">
-<li>Compile to JAR:</li>
-</ol>
-<pre><code class="language-sh">javac -classpath `hadoop classpath` -d wordlength_classes WordLengthCount.java
-jar -cvf wordlength.jar -C wordlength_classes/ .
-</code></pre>
-<ol start="3">
-<li>Run Job:</li>
-</ol>
-<pre><code class="language-sh">hadoop jar wordlength.jar WordLengthCount /user/username/input /user/username/wordlength_output
-</code></pre>
-<hr>
-<h1 id="some-advance-example-to-try">Some Advance Example to Try</h1>
-<h2 id="inverted-index-example-in-hadoop-java--python"><strong>Inverted Index Example in Hadoop (Java &amp; Python)</strong></h2>
-<p>An <strong>Inverted Index</strong> is a key-value mapping of words to the documents in which they appear. It is widely used in search engines like Google to index web pages efficiently.</p>
-<hr>
-<h1 id="1️⃣-java-implementation-mapreduce"><strong>1️⃣ Java Implementation (MapReduce)</strong></h1>
-<h3 id="how-it-works"><strong>How It Works</strong></h3>
-<ol>
-<li>
-<p><strong>Mapper</strong></p>
-<ul>
-<li>Reads an input file (text file).</li>
-<li>Emits <strong>(word, filename)</strong> pairs.</li>
+<li>Converts the parse tree to an internal query representation.</li>
+<li>Verifies column names and performs expansions like *.</li>
+<li>Conducts type-checking and implicit type conversions.</li>
+<li>Collects expressions for partitioned tables to prune unnecessary partitions.</li>
+<li>Collects sampling information if specified in the query.</li>
 </ul>
 </li>
 <li>
-<p><strong>Reducer</strong></p>
+<p><strong>Logical Plan Generator</strong></p>
 <ul>
-<li>Aggregates the filenames for each word.</li>
-<li>Outputs <strong>(word, list of filenames)</strong>.</li>
+<li>Converts the internal query representation to a logical plan (tree of operators).</li>
+<li>Includes relational algebra operators (e.g., filter, join) and Hive-specific operators.</li>
+<li>Uses a reduceSink operator at the map-reduce boundary.</li>
+<li>Optimizes the plan for performance (e.g., multi-way joins, map-side partial aggregation, two-stage group-by).</li>
+</ul>
+</li>
+<li>
+<p><strong>Query Plan Generator</strong></p>
+<ul>
+<li>Converts the logical plan to a series of map-reduce tasks.</li>
+<li>Recursively traverses the operator tree to create map-reduce tasks.</li>
+<li>Uses the reduceSink operator's descriptor for reduction keys.</li>
+<li>Includes required samples/partitions if specified in the query.</li>
+<li>Serializes the plan and writes it to a file for submission to the map-reduce framework.</li>
 </ul>
 </li>
 </ol>
-<hr>
-<h3 id="step-1-java-code-for-inverted-index"><strong>Step 1: Java Code for Inverted Index</strong></h3>
-<p>Create a new Java project and ensure you have the <strong>Hadoop 3.4.1</strong> dependencies.</p>
-<h4 id="mapper-class-extract-words--filenames"><strong>Mapper Class (Extract Words &amp; Filenames)</strong></h4>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.io.*;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.*;
-<span class="hljs-keyword">import</span> java.io.IOException;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InvertedIndexMapper</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Mapper</span>&lt;LongWritable, Text, Text, Text&gt; {
-    <span class="hljs-keyword">private</span> <span class="hljs-type">Text</span> <span class="hljs-variable">word</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Text</span>();
-    <span class="hljs-keyword">private</span> <span class="hljs-type">Text</span> <span class="hljs-variable">fileName</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Text</span>();
-
-    <span class="hljs-meta">@Override</span>
-    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">map</span><span class="hljs-params">(LongWritable key, Text value, Context context)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException {
-        <span class="hljs-comment">// Get filename from context</span>
-        <span class="hljs-type">String</span> <span class="hljs-variable">filePath</span> <span class="hljs-operator">=</span> ((org.apache.hadoop.mapreduce.lib.input.FileSplit) context.getInputSplit()).getPath().getName();
-        fileName.set(filePath);
-
-        <span class="hljs-comment">// Split words by non-alphanumeric characters</span>
-        String[] words = value.toString().toLowerCase().split(<span class="hljs-string">&quot;\\W+&quot;</span>);
-
-        <span class="hljs-keyword">for</span> (String w : words) {
-            <span class="hljs-keyword">if</span> (!w.isEmpty()) {
-                word.set(w);
-                context.write(word, fileName);
-            }
-        }
-    }
-}
-</code></pre>
-<hr>
-<h4 id="reducer-class-aggregate-files-per-word"><strong>Reducer Class (Aggregate Files per Word)</strong></h4>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.io.*;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.*;
-<span class="hljs-keyword">import</span> java.io.IOException;
-<span class="hljs-keyword">import</span> java.util.HashSet;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InvertedIndexReducer</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Reducer</span>&lt;Text, Text, Text, Text&gt; {
-    <span class="hljs-meta">@Override</span>
-    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">reduce</span><span class="hljs-params">(Text key, Iterable&lt;Text&gt; values, Context context)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException {
-        HashSet&lt;String&gt; fileSet = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashSet</span>&lt;&gt;();
-
-        <span class="hljs-keyword">for</span> (Text value : values) {
-            fileSet.add(value.toString());
-        }
-
-        <span class="hljs-comment">// Convert set to comma-separated string</span>
-        <span class="hljs-type">String</span> <span class="hljs-variable">fileList</span> <span class="hljs-operator">=</span> String.join(<span class="hljs-string">&quot;, &quot;</span>, fileSet);
-        context.write(key, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Text</span>(fileList));
-    }
-}
-</code></pre>
-<hr>
-<h4 id="driver-class-run-the-job"><strong>Driver Class (Run the Job)</strong></h4>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.conf.Configuration;
-<span class="hljs-keyword">import</span> org.apache.hadoop.fs.Path;
-<span class="hljs-keyword">import</span> org.apache.hadoop.io.Text;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Job;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">InvertedIndexDriver</span> {
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
-        <span class="hljs-keyword">if</span> (args.length != <span class="hljs-number">2</span>) {
-            System.err.println(<span class="hljs-string">&quot;Usage: InvertedIndex &lt;input path&gt; &lt;output path&gt;&quot;</span>);
-            System.exit(-<span class="hljs-number">1</span>);
-        }
-
-        <span class="hljs-type">Configuration</span> <span class="hljs-variable">conf</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Configuration</span>();
-        <span class="hljs-type">Job</span> <span class="hljs-variable">job</span> <span class="hljs-operator">=</span> Job.getInstance(conf, <span class="hljs-string">&quot;Inverted Index&quot;</span>);
-        
-        job.setJarByClass(InvertedIndexDriver.class);
-        job.setMapperClass(InvertedIndexMapper.class);
-        job.setReducerClass(InvertedIndexReducer.class);
-
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-
-        FileInputFormat.addInputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">0</span>]));
-        FileOutputFormat.setOutputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">1</span>]));
-
-        System.exit(job.waitForCompletion(<span class="hljs-literal">true</span>) ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
-    }
-}
-</code></pre>
-<hr>
-<h3 id="step-2-compile-and-package"><strong>Step 2: Compile and Package</strong></h3>
-<pre><code class="language-sh">javac -classpath $(/opt/hadoop-3.4.1/bin/hadoop classpath) -d . InvertedIndexMapper.java InvertedIndexReducer.java InvertedIndexDriver.java
-
-jar cf invertedindex.jar *.class
-</code></pre>
-<hr>
-<h3 id="step-3-run-the-job"><strong>Step 3: Run the Job</strong></h3>
-<pre><code class="language-sh">hadoop jar invertedindex.jar InvertedIndexDriver /input /output
-</code></pre>
-<p>Where <code>/input</code> is an HDFS directory containing text files.</p>
-<hr>
-<h3 id="sample-input-hdfs-inputfile1txt-and-inputfile2txt"><strong>Sample Input (HDFS <code>/input/file1.txt</code> and <code>/input/file2.txt</code>)</strong></h3>
-<p><strong>file1.txt</strong></p>
-<pre><code>hadoop is great
-big data is powerful
-</code></pre>
-<p><strong>file2.txt</strong></p>
-<pre><code>hadoop supports big data
-</code></pre>
-<h3 id="expected-output-outputpart-r-00000"><strong>Expected Output (<code>/output/part-r-00000</code>)</strong></h3>
-<pre><code>big        file1.txt, file2.txt
-data       file1.txt, file2.txt
-great      file1.txt
-hadoop     file1.txt, file2.txt
-is         file1.txt
-powerful   file1.txt
-supports   file2.txt
-</code></pre>
-<hr>
-<h1 id="2️⃣-python-implementation-hadoop-streaming"><strong>2️⃣ Python Implementation (Hadoop Streaming)</strong></h1>
-<p>Hadoop Streaming allows you to write the Mapper and Reducer in Python.</p>
-<hr>
-<h3 id="step-1-python-mapper-mapperpy"><strong>Step 1: Python Mapper (<code>mapper.py</code>)</strong></h3>
-<pre><code class="language-python"><span class="hljs-comment">#!/usr/bin/env python3</span>
-<span class="hljs-keyword">import</span> sys
-<span class="hljs-keyword">import</span> os
-
-<span class="hljs-comment"># Get the filename from Hadoop environment</span>
-file_name = os.environ.get(<span class="hljs-string">&quot;map_input_file&quot;</span>, <span class="hljs-string">&quot;unknown_file&quot;</span>).split(<span class="hljs-string">&quot;/&quot;</span>)[-<span class="hljs-number">1</span>]
-
-<span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> sys.stdin:
-    words = line.strip().lower().split()
-    <span class="hljs-keyword">for</span> word <span class="hljs-keyword">in</span> words:
-        <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{word}</span>\t<span class="hljs-subst">{file_name}</span>&quot;</span>)
-</code></pre>
-<hr>
-<h3 id="step-2-python-reducer-reducerpy"><strong>Step 2: Python Reducer (<code>reducer.py</code>)</strong></h3>
-<pre><code class="language-python"><span class="hljs-comment">#!/usr/bin/env python3</span>
-<span class="hljs-keyword">import</span> sys
-
-current_word = <span class="hljs-literal">None</span>
-files = <span class="hljs-built_in">set</span>()
-
-<span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> sys.stdin:
-    word, filename = line.strip().split(<span class="hljs-string">&quot;\t&quot;</span>)
-
-    <span class="hljs-keyword">if</span> current_word == word:
-        files.add(filename)
-    <span class="hljs-keyword">else</span>:
-        <span class="hljs-keyword">if</span> current_word:
-            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{current_word}</span>\t<span class="hljs-subst">{<span class="hljs-string">&#x27;, &#x27;</span>.join(files)}</span>&quot;</span>)
-        current_word = word
-        files = {filename}
-
-<span class="hljs-comment"># Print the last word</span>
-<span class="hljs-keyword">if</span> current_word:
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{current_word}</span>\t<span class="hljs-subst">{<span class="hljs-string">&#x27;, &#x27;</span>.join(files)}</span>&quot;</span>)
-</code></pre>
-<hr>
-<h3 id="step-3-make-scripts-executable"><strong>Step 3: Make Scripts Executable</strong></h3>
-<pre><code class="language-sh"><span class="hljs-built_in">chmod</span> +x mapper.py reducer.py
-</code></pre>
-<hr>
-<h3 id="step-4-run-hadoop-streaming"><strong>Step 4: Run Hadoop Streaming</strong></h3>
-<pre><code class="language-sh">hadoop jar <span class="hljs-variable">$HADOOP_HOME</span>/share/hadoop/tools/lib/hadoop-streaming-*.jar \
-    -input /input \
-    -output /output \
-    -mapper mapper.py \
-    -reducer reducer.py \
-    -file mapper.py \
-    -file reducer.py
-</code></pre>
-<hr>
-<h3 id="expected-output-outputpart-00000"><strong>Expected Output (<code>/output/part-00000</code>)</strong></h3>
-<pre><code>big        file1.txt, file2.txt
-data       file1.txt, file2.txt
-great      file1.txt
-hadoop     file1.txt, file2.txt
-is         file1.txt
-powerful   file1.txt
-supports   file2.txt
-</code></pre>
-<hr>
-<h2 id="conclusion"><strong>Conclusion</strong></h2>
+<h3 id="34-optimizer"><strong>3.4. Optimizer</strong></h3>
+<p>More plan transformations are performed by the optimizer. The optimizer is an evolving component. As of 2011, it was rule-based and performed the following: column pruning and predicate pushdown. However, the infrastructure was in place, and there was work under progress to include other optimizations like map-side join.
+<br>
+The optimizer can be enhanced to be cost-based. The sorted nature of output tables can also be preserved and used later on to generate better plans. The query can be performed on a small sample of data to guess the data distribution, which can be used to generate a better plan.</p>
+<h3 id="35-execution"><strong>3.5. Execution</strong>:</h3>
+<p>After generating the physical plan, Hive submits the jobs to the Hadoop cluster:</p>
 <ul>
-<li>Java provides <strong>fine-grained control</strong> with the Hadoop MapReduce API.</li>
-<li>Python is <strong>simpler and faster to develop</strong> using Hadoop Streaming.</li>
-<li>Both solutions demonstrate how <strong>HDFS stores data</strong>, <strong>MapReduce processes it</strong>, and <strong>the output is aggregated efficiently</strong>.</li>
+<li><strong>Job Submission</strong>: The jobs are submitted to the Hadoop JobTracker (or ResourceManager in YARN) for execution.</li>
+<li><strong>Task Execution</strong>: Each job is executed as a series of tasks across the cluster:</li>
+<li><strong>Map Tasks</strong>: Each input split (data partition) is processed by a map task, which applies the specified transformations and outputs intermediate key-value pairs.</li>
+<li><strong>Shuffle and Sort</strong>: The framework shuffles the intermediate data between the map tasks and sorts it based on the keys.</li>
+<li><strong>Reduce Tasks</strong>: The sorted data is then processed by reduce tasks, which aggregate the results and produce the final output.</li>
 </ul>
-<table>
-<thead>
-<tr>
-<th>Language</th>
-<th>Compilation Required?</th>
-<th>Performance</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Java</td>
-<td>Yes (JAR file)</td>
-<td>Fast</td>
-</tr>
-<tr>
-<td>Python</td>
-<td>No (Direct Execution)</td>
-<td>Slower</td>
-</tr>
-</tbody>
-</table>
-<ul>
-<li>Java is better for production because of better performance.</li>
-<li>Python is easier to write/debug but can be slower for large data.</li>
-</ul>
-<hr>
-<h2 id="example-4-joins-in-hadoop-map-side-join"><strong>Example 4: Joins in Hadoop (Map-Side Join)</strong></h2>
-<p>Map-Side Join is a technique in Hadoop where <strong>one dataset is small enough</strong> to fit in memory, allowing the <strong>Mapper</strong> to perform the join without a Reducer. This is <strong>faster than Reduce-Side Joins</strong> because there is no need for shuffling or sorting.</p>
-<hr>
-<h2 id="-use-case-joining-user-data-and-transaction-data"><strong>📌 Use Case: Joining User Data and Transaction Data</strong></h2>
-<p>We have two datasets:</p>
-<ol>
-<li><strong>Users Dataset (<code>users.txt</code>)</strong>: Contains user details.</li>
-<li><strong>Transactions Dataset (<code>transactions.txt</code>)</strong>: Contains transaction records.</li>
-</ol>
-<h3 id="-sample-data"><strong>🔹 Sample Data</strong></h3>
-<h4 id="users-userstxt"><strong>Users (<code>users.txt</code>)</strong></h4>
-<p>Format: <code>user_id, name, age, city</code></p>
-<pre><code>1,Alex,30,New York
-2,Bob,25,San Francisco
-3,Charlie,28,Los Angeles
-</code></pre>
-<h4 id="transactions-transactionstxt"><strong>Transactions (<code>transactions.txt</code>)</strong></h4>
-<p>Format: <code>trans_id, user_id, amount</code></p>
-<pre><code>101,1,200.50
-102,2,150.00
-103,1,300.00
-104,3,450.75
-105,2,120.25
-</code></pre>
-<h3 id="-expected-output-join-on-user_id"><strong>📌 Expected Output</strong> (Join on <code>user_id</code>)</h3>
-<pre><code>101,Alex,200.50
-102,Bob,150.00
-103,Alex,300.00
-104,Charlie,450.75
-105,Bob,120.25
-</code></pre>
-<p>This output means <strong>each transaction is joined with the corresponding user name</strong>.</p>
-<hr>
-<h2 id="-step-1-upload-data-to-hdfs"><strong>📌 Step 1: Upload Data to HDFS</strong></h2>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">mkdir</span> -p /join_data
-/opt/hadoop-3.4.1/bin/hadoop fs -put users.txt /join_data/
-/opt/hadoop-3.4.1/bin/hadoop fs -put transactions.txt /join_data/
-</code></pre>
-<hr>
-<h2 id="-step-2-java-mapreduce-implementation"><strong>📌 Step 2: Java MapReduce Implementation</strong></h2>
-<h3 id="1️⃣-mapper-joinmapperjava"><strong>1️⃣ Mapper (JoinMapper.java)</strong></h3>
-<ul>
-<li>Loads the <strong>Users dataset into memory (Distributed Cache)</strong>.</li>
-<li>Reads the <strong>Transactions dataset</strong> and performs a join in the <strong>Mapper</strong>.</li>
-</ul>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.io.Text;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Mapper;
-<span class="hljs-keyword">import</span> org.apache.hadoop.conf.Configuration;
-<span class="hljs-keyword">import</span> org.apache.hadoop.fs.Path;
-<span class="hljs-keyword">import</span> org.apache.hadoop.filecache.DistributedCache;
+<p>Once all the jobs are completed, the results are saved back to HDFS or another specified output location. The Hive client can then retrieve the results for users to access.</p>
 
-<span class="hljs-keyword">import</span> java.io.*;
-<span class="hljs-keyword">import</span> java.util.HashMap;
-<span class="hljs-keyword">import</span> java.util.Map;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">JoinMapper</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">Mapper</span>&lt;Object, Text, Text, Text&gt; {
-    <span class="hljs-keyword">private</span> Map&lt;String, String&gt; userMap = <span class="hljs-keyword">new</span> <span class="hljs-title class_">HashMap</span>&lt;&gt;();
-    <span class="hljs-keyword">private</span> <span class="hljs-type">Text</span> <span class="hljs-variable">outputKey</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Text</span>();
-    <span class="hljs-keyword">private</span> <span class="hljs-type">Text</span> <span class="hljs-variable">outputValue</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Text</span>();
-
-    <span class="hljs-meta">@Override</span>
-    <span class="hljs-keyword">protected</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setup</span><span class="hljs-params">(Context context)</span> <span class="hljs-keyword">throws</span> IOException {
-        <span class="hljs-type">Configuration</span> <span class="hljs-variable">conf</span> <span class="hljs-operator">=</span> context.getConfiguration();
-        Path[] cacheFiles = context.getLocalCacheFiles(); <span class="hljs-comment">// Load from Distributed Cache</span>
-
-        <span class="hljs-keyword">if</span> (cacheFiles != <span class="hljs-literal">null</span> &amp;&amp; cacheFiles.length &gt; <span class="hljs-number">0</span>) {
-            <span class="hljs-type">BufferedReader</span> <span class="hljs-variable">reader</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">BufferedReader</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">FileReader</span>(cacheFiles[<span class="hljs-number">0</span>].toString()));
-            String line;
-            <span class="hljs-keyword">while</span> ((line = reader.readLine()) != <span class="hljs-literal">null</span>) {
-                String[] parts = line.split(<span class="hljs-string">&quot;,&quot;</span>);
-                <span class="hljs-keyword">if</span> (parts.length == <span class="hljs-number">4</span>) {
-                    userMap.put(parts[<span class="hljs-number">0</span>], parts[<span class="hljs-number">1</span>]); <span class="hljs-comment">// user_id -&gt; name</span>
-                }
-            }
-            reader.close();
-        }
-    }
-
-    <span class="hljs-meta">@Override</span>
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">map</span><span class="hljs-params">(Object key, Text value, Context context)</span> <span class="hljs-keyword">throws</span> IOException, InterruptedException {
-        String[] parts = value.toString().split(<span class="hljs-string">&quot;,&quot;</span>);
-        <span class="hljs-keyword">if</span> (parts.length == <span class="hljs-number">3</span>) {
-            <span class="hljs-type">String</span> <span class="hljs-variable">userId</span> <span class="hljs-operator">=</span> parts[<span class="hljs-number">1</span>];
-            <span class="hljs-type">String</span> <span class="hljs-variable">userName</span> <span class="hljs-operator">=</span> userMap.get(userId);
-            <span class="hljs-keyword">if</span> (userName != <span class="hljs-literal">null</span>) {
-                outputKey.set(parts[<span class="hljs-number">0</span>]); <span class="hljs-comment">// trans_id</span>
-                outputValue.set(userName + <span class="hljs-string">&quot;,&quot;</span> + parts[<span class="hljs-number">2</span>]); <span class="hljs-comment">// name, amount</span>
-                context.write(outputKey, outputValue);
-            }
-        }
-    }
-}
-</code></pre>
-<hr>
-<h3 id="2️⃣-driver-joindriverjava"><strong>2️⃣ Driver (JoinDriver.java)</strong></h3>
-<ul>
-<li><strong>Adds <code>users.txt</code> to Distributed Cache</strong>.</li>
-<li>Runs the <strong>MapReduce job</strong> with <code>JoinMapper</code> only (<strong>no Reducer needed</strong>).</li>
-</ul>
-<pre><code class="language-java"><span class="hljs-keyword">import</span> org.apache.hadoop.conf.Configuration;
-<span class="hljs-keyword">import</span> org.apache.hadoop.fs.Path;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.Job;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-<span class="hljs-keyword">import</span> org.apache.hadoop.io.Text;
-
-<span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">JoinDriver</span> {
-    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> <span class="hljs-keyword">throws</span> Exception {
-        <span class="hljs-type">Configuration</span> <span class="hljs-variable">conf</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Configuration</span>();
-        <span class="hljs-type">Job</span> <span class="hljs-variable">job</span> <span class="hljs-operator">=</span> Job.getInstance(conf, <span class="hljs-string">&quot;map-side join&quot;</span>);
-
-        job.setJarByClass(JoinDriver.class);
-        job.setMapperClass(JoinMapper.class);
-        job.setNumReduceTasks(<span class="hljs-number">0</span>); <span class="hljs-comment">// No reducer needed</span>
-
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-
-        FileInputFormat.addInputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">0</span>])); <span class="hljs-comment">// Transactions dataset</span>
-        FileOutputFormat.setOutputPath(job, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">1</span>])); <span class="hljs-comment">// Output</span>
-
-        <span class="hljs-comment">// Add Users dataset to Distributed Cache</span>
-        job.addCacheFile(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Path</span>(args[<span class="hljs-number">2</span>]).toUri());
-
-        System.exit(job.waitForCompletion(<span class="hljs-literal">true</span>) ? <span class="hljs-number">0</span> : <span class="hljs-number">1</span>);
-    }
-}
-</code></pre>
-<hr>
-<h2 id="-step-3-compile-and-package-java-code"><strong>📌 Step 3: Compile and Package Java Code</strong></h2>
-<pre><code class="language-sh">javac -classpath $(/opt/hadoop-3.4.1/bin/hadoop classpath) -d . JoinMapper.java JoinDriver.java
-jar cf join.jar *.class
-</code></pre>
-<hr>
-<h2 id="-step-4-run-java-mapreduce-job"><strong>📌 Step 4: Run Java MapReduce Job</strong></h2>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">rm</span> -r join_output
-/opt/hadoop-3.4.1/bin/hadoop jar join.jar JoinDriver join_data/transactions.txt join_output join_data/users.txt
-</code></pre>
-<p>Check the output:</p>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">cat</span> join_output/part-m-00000
-</code></pre>
-<hr>
-<h2 id="-step-5-python-mapreduce-implementation"><strong>📌 Step 5: Python MapReduce Implementation</strong></h2>
-<p>Using <strong>Hadoop Streaming</strong>, we can achieve the same result in Python.</p>
-<hr>
-<h3 id="1️⃣-python-mapper-join_mapperpy"><strong>1️⃣ Python Mapper (<code>join_mapper.py</code>)</strong></h3>
-<p>Loads the <strong>Users dataset into memory</strong> and performs the join.</p>
-<pre><code class="language-python"><span class="hljs-comment">#!/usr/bin/env python3</span>
-<span class="hljs-keyword">import</span> sys
-
-<span class="hljs-comment"># Load user data into memory</span>
-user_map = {}
-<span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(<span class="hljs-string">&quot;users.txt&quot;</span>, <span class="hljs-string">&quot;r&quot;</span>) <span class="hljs-keyword">as</span> f:
-    <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> f:
-        parts = line.strip().split(<span class="hljs-string">&quot;,&quot;</span>)
-        <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(parts) == <span class="hljs-number">4</span>:
-            user_map[parts[<span class="hljs-number">0</span>]] = parts[<span class="hljs-number">1</span>]  <span class="hljs-comment"># user_id -&gt; name</span>
-
-<span class="hljs-comment"># Process transactions and join</span>
-<span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> sys.stdin:
-    parts = line.strip().split(<span class="hljs-string">&quot;,&quot;</span>)
-    <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(parts) == <span class="hljs-number">3</span>:
-        user_id = parts[<span class="hljs-number">1</span>]
-        <span class="hljs-keyword">if</span> user_id <span class="hljs-keyword">in</span> user_map:
-            <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{parts[<span class="hljs-number">0</span>]}</span>\t<span class="hljs-subst">{user_map[user_id]}</span>,<span class="hljs-subst">{parts[<span class="hljs-number">2</span>]}</span>&quot;</span>)
-</code></pre>
-<p>Make it executable:</p>
-<pre><code class="language-sh"><span class="hljs-built_in">chmod</span> +x join_mapper.py
-</code></pre>
-<hr>
-<h2 id="-step-6-run-python-mapreduce-job"><strong>📌 Step 6: Run Python MapReduce Job</strong></h2>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">rm</span> -r /join_output_python
-
-/opt/hadoop-3.4.1/bin/hadoop jar /opt/hadoop-3.4.1/share/hadoop/tools/lib/hadoop-streaming-*.jar \
-    -input /join_data/transactions.txt \
-    -output /join_output_python \
-    -mapper join_mapper.py \
-    -file users.txt
-</code></pre>
-<p>Check results:</p>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">cat</span> /join_output_python/part-00000
-</code></pre>
-<hr>
-<h2 id="-expected-output"><strong>📌 Expected Output</strong></h2>
-<p>Both Java and Python should produce:</p>
-<pre><code>101,Alex,200.50
-102,Bob,150.00
-103,Alex,300.00
-104,Charlie,450.75
-105,Bob,120.25
-</code></pre>
-<hr>
-<h2 id="example-6-running-a-hive-query-on-hdfs-data"><strong>Example 6: Running a Hive Query on HDFS Data</strong></h2>
-<p>Apache Hive provides a SQL-like interface for querying large datasets stored in HDFS. In this example, we will:<br>
-✅ Load structured data into Hive tables.<br>
-✅ Run <strong>SQL queries</strong> on the data.<br>
-✅ Use <strong>HDFS as storage</strong> for Hive tables.</p>
-<hr>
-<h2 id="-step-1-prepare-the-input-data"><strong>📌 Step 1: Prepare the Input Data</strong></h2>
-<p>We will create a <strong>sample dataset</strong> about <strong>employees and departments</strong>.</p>
-<h3 id="employee-data-employeescsv"><strong>Employee Data (<code>employees.csv</code>)</strong></h3>
-<p>Format: <code>emp_id, name, age, department_id, salary</code></p>
-<pre><code>1,Alex,30,101,70000
-2,Bob,25,102,55000
-3,Charlie,28,101,65000
-4,David,35,103,80000
-5,Emma,26,102,60000
-</code></pre>
-<h3 id="department-data-departmentscsv"><strong>Department Data (<code>departments.csv</code>)</strong></h3>
-<p>Format: <code>dept_id, dept_name</code></p>
-<pre><code>101,Engineering
-102,Marketing
-103,Finance
-</code></pre>
-<hr>
-<h2 id="-step-2-upload-data-to-hdfs"><strong>📌 Step 2: Upload Data to HDFS</strong></h2>
-<pre><code class="language-sh">/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">mkdir</span> -p /hive_data/employees
-/opt/hadoop-3.4.1/bin/hadoop fs -<span class="hljs-built_in">mkdir</span> -p /hive_data/departments
-
-/opt/hadoop-3.4.1/bin/hadoop fs -put employees.csv /hive_data/employees/
-/opt/hadoop-3.4.1/bin/hadoop fs -put departments.csv /hive_data/departments/
-</code></pre>
-<hr>
-<h2 id="-step-3-start-hive"><strong>📌 Step 3: Start Hive</strong></h2>
-<pre><code class="language-sh">hive
-</code></pre>
-<hr>
-<h2 id="-step-4-create-hive-tables"><strong>📌 Step 4: Create Hive Tables</strong></h2>
-<h3 id="1️⃣-create-an-external-table-for-employees"><strong>1️⃣ Create an External Table for Employees</strong></h3>
-<p>This table points directly to <strong>HDFS location</strong> <code>/hive_data/employees</code>.</p>
-<pre><code class="language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">EXTERNAL</span> <span class="hljs-keyword">TABLE</span> employees (
-    emp_id <span class="hljs-type">INT</span>,
-    name STRING,
-    age <span class="hljs-type">INT</span>,
-    department_id <span class="hljs-type">INT</span>,
-    salary <span class="hljs-type">FLOAT</span>
-)
-<span class="hljs-type">ROW</span> FORMAT DELIMITED
-FIELDS TERMINATED <span class="hljs-keyword">BY</span> <span class="hljs-string">&#x27;,&#x27;</span>
-STORED <span class="hljs-keyword">AS</span> TEXTFILE
-LOCATION <span class="hljs-string">&#x27;/hive_data/employees&#x27;</span>;
-</code></pre>
-<h3 id="2️⃣-create-an-external-table-for-departments"><strong>2️⃣ Create an External Table for Departments</strong></h3>
-<pre><code class="language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">EXTERNAL</span> <span class="hljs-keyword">TABLE</span> departments (
-    dept_id <span class="hljs-type">INT</span>,
-    dept_name STRING
-)
-<span class="hljs-type">ROW</span> FORMAT DELIMITED
-FIELDS TERMINATED <span class="hljs-keyword">BY</span> <span class="hljs-string">&#x27;,&#x27;</span>
-STORED <span class="hljs-keyword">AS</span> TEXTFILE
-LOCATION <span class="hljs-string">&#x27;/hive_data/departments&#x27;</span>;
-</code></pre>
-<hr>
-<h2 id="-step-5-run-hive-queries"><strong>📌 Step 5: Run Hive Queries</strong></h2>
-<h3 id="1️⃣-check-if-data-is-loaded"><strong>1️⃣ Check if Data is Loaded</strong></h3>
-<pre><code class="language-sql"><span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> employees;
-<span class="hljs-keyword">SELECT</span> <span class="hljs-operator">*</span> <span class="hljs-keyword">FROM</span> departments;
-</code></pre>
-<h3 id="2️⃣-find-employees-in-the-engineering-department"><strong>2️⃣ Find Employees in the Engineering Department</strong></h3>
-<pre><code class="language-sql"><span class="hljs-keyword">SELECT</span> e.name, e.age, e.salary, d.dept_name
-<span class="hljs-keyword">FROM</span> employees e
-<span class="hljs-keyword">JOIN</span> departments d
-<span class="hljs-keyword">ON</span> e.department_id <span class="hljs-operator">=</span> d.dept_id
-<span class="hljs-keyword">WHERE</span> d.dept_name <span class="hljs-operator">=</span> <span class="hljs-string">&#x27;Engineering&#x27;</span>;
-</code></pre>
-<h3 id="3️⃣-get-average-salary-by-department"><strong>3️⃣ Get Average Salary by Department</strong></h3>
-<pre><code class="language-sql"><span class="hljs-keyword">SELECT</span> d.dept_name, <span class="hljs-built_in">AVG</span>(e.salary) <span class="hljs-keyword">AS</span> avg_salary
-<span class="hljs-keyword">FROM</span> employees e
-<span class="hljs-keyword">JOIN</span> departments d
-<span class="hljs-keyword">ON</span> e.department_id <span class="hljs-operator">=</span> d.dept_id
-<span class="hljs-keyword">GROUP</span> <span class="hljs-keyword">BY</span> d.dept_name;
-</code></pre>
-<h3 id="4️⃣-find-employees-with-salary-above-60000"><strong>4️⃣ Find Employees with Salary Above 60,000</strong></h3>
-<pre><code class="language-sql"><span class="hljs-keyword">SELECT</span> name, salary <span class="hljs-keyword">FROM</span> employees <span class="hljs-keyword">WHERE</span> salary <span class="hljs-operator">&gt;</span> <span class="hljs-number">60000</span>;
-</code></pre>
-<hr>
-<h2 id="-step-6-exit-hive"><strong>📌 Step 6: Exit Hive</strong></h2>
-<pre><code class="language-sql">exit;
-</code></pre>
-<hr>
-<h2 id="-step-7-run-hive-query-from-terminal"><strong>📌 Step 7: Run Hive Query from Terminal</strong></h2>
-<p>Instead of opening the Hive shell, we can run a query <strong>directly from the command line</strong>:</p>
-<pre><code class="language-sh">hive -e <span class="hljs-string">&quot;SELECT name, salary FROM employees WHERE salary &gt; 60000;&quot;</span>
-</code></pre>
-<hr>
-<h2 id="-summary"><strong>📌 Summary</strong></h2>
-<table>
-<thead>
-<tr>
-<th>Feature</th>
-<th>Hive</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Storage</strong></td>
-<td>HDFS</td>
-</tr>
-<tr>
-<td><strong>Query Language</strong></td>
-<td>SQL (HiveQL)</td>
-</tr>
-<tr>
-<td><strong>Schema Type</strong></td>
-<td>Schema-on-read</td>
-</tr>
-<tr>
-<td><strong>Optimized for</strong></td>
-<td>Analytical Queries</td>
-</tr>
-<tr>
-<td><strong>Integration</strong></td>
-<td>Works with Spark, Hadoop, Presto</td>
-</tr>
-</tbody>
-</table>
-
-            <script async src="https://cdn.jsdelivr.net/npm/katex-copytex@latest/dist/katex-copytex.min.js"></script>
+            
             <script async type="text/javascript">
 /* From extension bierner.markdown-mermaid */
 /*! For license information please see index.bundle.js.LICENSE.txt */
